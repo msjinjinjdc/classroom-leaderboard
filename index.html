@@ -37,10 +37,7 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
-                <button onclick="openStudio()"
-                    class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition">
-                    <span>🎨</span> Customize App
-                </button>
+
                 <button id="admin-toggle-btn" onclick="handleAdminToggle()"
                     class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 shadow-xs transition">
                     <span>🔒</span> Teacher Admin
@@ -53,6 +50,7 @@
     <section id="admin-toolbar" class="hidden bg-amber-50 border-b border-amber-200/90">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 space-y-3">
             <div class="flex flex-wrap items-center justify-between gap-2">
+
                 <div class="flex items-center gap-2">
                     <span
                         class="px-2.5 py-1 rounded-lg bg-amber-500 text-white text-xs font-extrabold uppercase tracking-wider">Admin
@@ -212,7 +210,8 @@
                     <h2 class="text-lg font-extrabold text-slate-900">Classroom Reward Menu</h2>
                     <p class="text-xs text-slate-500 mt-0.5">Students can view reward prices here. Unlock
                         <strong>Teacher
-                            Admin</strong> to edit rewards or redeem them on any student row.</p>
+                            Admin</strong> to edit rewards or redeem them on any student row.
+                    </p>
                 </div>
                 <div class="flex items-center gap-2">
                     <span id="shop-count-badge"
@@ -359,143 +358,7 @@
         </div>
     </div>
 
-    <!-- Customize App Studio Drawer -->
-    <div id="studio-drawer" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex justify-end"
-        onclick="if(event.target===this) closeStudio()">
-        <div
-            class="bg-white w-full max-w-lg h-full overflow-y-auto p-6 shadow-2xl flex flex-col justify-between space-y-6">
-            <div class="space-y-6">
-                <div class="flex items-center justify-between border-b border-slate-200 pb-4">
-                    <div>
-                        <span
-                            class="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-[11px] font-extrabold uppercase">Live
-                            Customizer</span>
-                        <h2 class="text-xl font-extrabold text-slate-900 mt-1">Customize Your Web App</h2>
-                    </div>
-                    <button onclick="closeStudio()"
-                        class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold">✕</button>
-                </div>
 
-                <div class="space-y-3">
-                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-400">1. Class Branding &
-                        Security</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Class Title</label>
-                            <input id="cfg-title" type="text" oninput="updateConfigLive()"
-                                class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold" />
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Teacher Admin PIN</label>
-                            <input id="cfg-pin" type="text" oninput="updateConfigLive()"
-                                class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold" />
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Class Milestone Label</label>
-                            <input id="cfg-goal-title" type="text" oninput="updateConfigLive()"
-                                class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold" />
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Target Credits</label>
-                            <input id="cfg-goal-target" type="number" min="0.01" step="any" oninput="updateConfigLive()"
-                                class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="space-y-3 pt-3 border-t border-slate-200">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-400">2. Classroom Teams (6
-                            Teams)</h3>
-                        <label class="inline-flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
-                            <input id="cfg-enable-houses" type="checkbox" onchange="updateConfigLive()"
-                                class="rounded text-indigo-600" />
-                            Enable Teams
-                        </label>
-                    </div>
-                    <div id="cfg-houses-container" class="space-y-2"></div>
-                </div>
-
-                <div class="space-y-3 pt-3 border-t border-slate-200">
-                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-400">3. Point Controls &
-                        Features</h3>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">Default Custom Add Points
-                            Input</label>
-                        <input id="cfg-default-add" type="number" min="1" oninput="updateConfigLive()"
-                            class="w-32 px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold" />
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                        <label
-                            class="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 cursor-pointer hover:bg-slate-50">
-                            <input id="cfg-show-goal" type="checkbox" onchange="updateConfigLive()" />
-                            Show Class Milestone Bar
-                        </label>
-                        <label
-                            class="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 cursor-pointer hover:bg-slate-50">
-                            <input id="cfg-show-shop" type="checkbox" onchange="updateConfigLive()" />
-                            Show Reward Menu Tab
-                        </label>
-                        <label
-                            class="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 cursor-pointer hover:bg-slate-50">
-                            <input id="cfg-show-confetti" type="checkbox" onchange="updateConfigLive()" />
-                            Confetti Celebrations
-                        </label>
-                        <label
-                            class="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 cursor-pointer hover:bg-slate-50">
-                            <input id="cfg-sound" type="checkbox" onchange="updateConfigLive()" />
-                            Web Audio Sound Effects
-                        </label>
-                    </div>
-                </div>
-
-                <div class="space-y-3 pt-3 border-t border-slate-200">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-400">4. Classroom Reward
-                            Menu</h3>
-                        <button type="button" onclick="addRewardItem()"
-                            class="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-extrabold transition">
-                            + Add Reward
-                        </button>
-                    </div>
-                    <div id="cfg-rewards-container" class="space-y-2.5"></div>
-                </div>
-
-                <div class="space-y-3 pt-3 border-t border-slate-200">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-400">5. Preset Classroom
-                            Badges</h3>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <input id="cfg-new-preset-badge" type="text" placeholder="Add new preset badge..."
-                            onkeydown="if(event.key==='Enter'){ event.preventDefault(); addPresetBadgeFromStudio(); }"
-                            class="flex-1 px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-semibold" />
-                        <button type="button" onclick="addPresetBadgeFromStudio()"
-                            class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-extrabold transition">
-                            + Add Preset
-                        </button>
-                    </div>
-                    <div id="cfg-preset-badges-container" class="flex flex-wrap gap-1.5"></div>
-                </div>
-            </div>
-
-            <div class="pt-4 border-t border-slate-200 space-y-2.5">
-                <div class="rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs text-emerald-950">
-                    <strong>⚡ Supabase 3-File Export Ready!</strong> Download your customized <code>index.html</code>,
-                    <code>style.css</code>, and <code>app.js</code> wired to <strong>Supabase</strong>, paste your
-                    Project URL &
-                    Publishable Key into <code>app.js</code>, and host free on GitHub Pages.
-                </div>
-                <button onclick="downloadConfiguredFiles()"
-                    class="w-full py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-extrabold text-xs sm:text-sm shadow-md transition">
-                    ⬇️ Download index.html, style.css & app.js (Supabase)
-                </button>
-            </div>
-        </div>
-    </div>
 
     <script src="app.js"></script>
 </body>
