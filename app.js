@@ -18,8 +18,7 @@ const COLOR_PALETTES = {
 
 let appConfig = {
   classTitle: "Ms. JinJin's Class Leaderboard",
-  adminPin: "1234",
-  goalTitle: "Class Milestone: 20 Credits = Ice Cream for Everyone!",
+    goalTitle: "Class Milestone: 20 Credits = Ice Cream for Everyone!",
   goalCurrentCredits: 0,
   goalTarget: 20,
   enableHouses: true,
@@ -58,6 +57,7 @@ let appConfig = {
 // =========================================================================
 let sb = null;
 let isAdmin = false;
+let currentTeacherEmail = '';
 let currentTab = 'weekly';
 let currentHouseFilter = 'ALL';
 let weekNumber = 11;
@@ -103,6 +103,18 @@ async function initSupabase() {
 
   try {
     sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // Check if teacher is already signed in from a previous session
+    const { data: { session } } = await sb.auth.getSession();
+    isAdmin = Boolean(session?.user);
+    currentTeacherEmail = session?.user?.email || '';
+
+    // Listen for sign-in / sign-out state changes
+    sb.auth.onAuthStateChange((_event, newSession) => {
+      isAdmin = Boolean(newSession?.user);
+      currentTeacherEmail = newSession?.user?.email || '';
+      renderAll();
+    });
     await loadFromSupabase();
 
     // Real-time live subscription across all student & teacher devices
@@ -310,11 +322,13 @@ function renderAll() {
   if (isAdmin) {
     modePill.textContent = 'Teacher Admin';
     modePill.className = 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300';
-    adminBtn.innerHTML = '<span>🔓</span> Exit Admin';
+    adminBtn.innerHTML = '<span>🔓</span> Sign Out';
     adminBtn.className = 'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 hover:bg-amber-400 shadow-xs transition';
     adminToolbar.classList.remove('hidden');
     goalEditor.classList.remove('hidden');
     if (shopAddBtn) shopAddBtn.classList.remove('hidden');
+        const emailBadge = document.getElementById('admin-email-badge');
+        if (emailBadge) emailBadge.textContent = currentTeacherEmail ? `Signed in as ${currentTeacherEmail}` : 'Signed in as Teacher';   
   } else {
     modePill.textContent = 'Student View';
     modePill.className = 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200';
@@ -988,35 +1002,58 @@ async function handleAddStudent(e) {
 // =========================================================================
 // 8. ADMIN PIN, CROWN TOP 3 & MODALS
 // =========================================================================
-function handleAdminToggle() {
+async function handleAdminToggle() {
   if (isAdmin) {
+    if (sb) await sb.auth.signOut();
     isAdmin = false;
-    showToast('Switched to Student View.', 'indigo');
+    currentTeacherEmail = '';
+    showToast('Signed out of Teacher Admin.', 'indigo');
     renderAll();
     return;
   }
-  document.getElementById('pin-input').value = '';
+  document.getElementById('admin-password-input').value = '';
   document.getElementById('pin-error').classList.add('hidden');
   document.getElementById('pin-modal').classList.remove('hidden');
-  setTimeout(() => document.getElementById('pin-input').focus(), 50);
+  setTimeout(() => document.getElementById('admin-email-input').focus(), 50);
 }
 
 function closePinModal() {
   document.getElementById('pin-modal').classList.add('hidden');
 }
 
-function submitPinUnlock(e) {
+async function submitTeacherLogin(e) {
   e.preventDefault();
-  const val = document.getElementById('pin-input').value.trim();
-  if (val === String(appConfig.adminPin)) {
-    isAdmin = true;
-    closePinModal();
-    showToast('Teacher Admin Mode Unlocked!', 'amber');
-    renderAll();
-  } else {
-    document.getElementById('pin-error').classList.remove('hidden');
+  if (!sb) {
+    showToast('Connect Supabase in app.js first.', 'amber');
+    return;
   }
+  const email = document.getElementById('admin-email-input').value.trim();
+  const password = document.getElementById('admin-password-input').value;
+  const errEl = document.getElementById('pin-error');
+  const submitBtn = document.getElementById('admin-login-submit');
+
+  errEl.classList.add('hidden');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Signing in...';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Sign In as Teacher';
+
+  if (error || !data?.user) {
+    errEl.textContent = error?.message || 'Invalid email or password.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  isAdmin = true;
+  currentTeacherEmail = data.user.email || email;
+  closePinModal();
+  showToast('Signed in to Teacher Admin!', 'amber');
+  renderAll();
 }
+
 
 function openResetConfirmModal() {
   const top3 = [...students].sort((a, b) => b.weeklyPoints - a.weeklyPoints).slice(0, 3);

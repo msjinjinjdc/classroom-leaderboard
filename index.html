@@ -64,8 +64,7 @@
           <span
             class="px-2.5 py-1 rounded-lg bg-amber-500 text-white text-xs font-extrabold uppercase tracking-wider">Admin
             Mode</span>
-          <span class="text-xs font-medium text-amber-900">Type custom points to add, redeem rewards, edit teams, or
-            remove students below.</span>
+          <span id="admin-email-badge" class="text-xs font-bold text-amber-900">Signed in as Teacher</span>
         </div>
         <div class="flex flex-wrap items-center gap-2">
           <button onclick="openResetConfirmModal()"
@@ -291,33 +290,38 @@
     </div>
   </div>
 
-  <!-- Teacher PIN Modal -->
-  <div id="pin-modal"
-    class="hidden fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4"
-    onclick="if(event.target===this) closePinModal()">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-extrabold text-slate-900">🔒 Unlock Teacher Admin</h3>
-        <button onclick="closePinModal()"
-          class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm">✕</button>
-      </div>
-      <p class="text-xs text-slate-500">
-        Enter your Teacher PIN (default is <code
-          class="px-1.5 py-0.5 rounded bg-slate-100 font-bold text-slate-800">1234</code>—you can change it at the top of <code>app.js</code>).
-      </p>
-      <form onsubmit="submitPinUnlock(event)" class="space-y-3">
-        <input id="pin-input" type="password" inputmode="numeric" placeholder="Enter Teacher PIN"
-          class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-        <p id="pin-error" class="hidden text-xs font-bold text-rose-600">Incorrect PIN. Please try again.</p>
-        <div class="flex items-center gap-2">
-          <button type="submit"
-            class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold transition">
-            Unlock Admin
-          </button>
-        </div>
-      </form>
+<!-- Teacher Login Modal (Supabase Email + Password Auth) -->
+<div id="pin-modal"
+  class="hidden fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4"
+  onclick="if(event.target===this) closePinModal()">
+  <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+    <div class="flex items-center justify-between">
+      <h3 class="text-lg font-extrabold text-slate-900">🔒 Teacher Admin Login</h3>
+      <button onclick="closePinModal()"
+        class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm">✕</button>
     </div>
+    <p class="text-xs text-slate-500">
+      Sign in with your email and password to manage points and students.
+    </p>
+    <form onsubmit="submitTeacherLogin(event)" class="space-y-3">
+      <div>
+        <label class="block text-[11px] font-bold text-slate-600 mb-1">Email</label>
+        <input id="admin-email-input" type="email" required placeholder="teacher@school.edu"
+          class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold text-slate-600 mb-1">Password</label>
+        <input id="admin-password-input" type="password" required placeholder="Enter your password"
+          class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+      </div>
+      <p id="pin-error" class="hidden text-xs font-bold text-rose-600">Invalid email or password.</p>
+      <button id="admin-login-submit" type="submit"
+        class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold transition">
+        Sign In as Teacher
+      </button>
+    </form>
   </div>
+</div>
 
   <!-- Confirm Crown Top 3 & Reset Modal -->
   <div id="reset-modal"
