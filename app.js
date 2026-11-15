@@ -721,7 +721,7 @@ function renderShop() {
           <p class="text-xs text-slate-500 leading-relaxed">${escapeHtml(r.desc)}</p>
         </div>
         <div class="pt-2 border-t border-slate-100 text-[11px] font-bold text-slate-400">
-          Deducts from All-Time Points only
+          Redeemable while supplies last.
         </div>
       </div>
     `;
