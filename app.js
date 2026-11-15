@@ -310,6 +310,23 @@ function updateCheerLabel() {
   el.textContent = `👏 ${capped} / ${maxCheers} ${noun} cheered for the winners!`;
 }
 
+// Groups students into Rank 1, Rank 2, and Rank 3 including any ties
+function getTop3PodiumGroups(studentList) {
+  const sorted = [...studentList].sort((a, b) =>
+    (b.weeklyPoints - a.weeklyPoints) || a.name.localeCompare(b.name)
+  );
+  const groups = { 1: [], 2: [], 3: [] };
+  let currentRank = 1;
+
+  for (let i = 0; i < sorted.length; i++) {
+    if (i > 0 && sorted[i].weeklyPoints < sorted[i - 1].weeklyPoints) {
+      currentRank += 1;
+    }
+    if (currentRank > 3) break;
+    groups[currentRank].push(sorted[i]);
+  }
+  return groups;
+}
 // =========================================================================
 // 6. RENDERING ENGINE (TACTILE POP + OLYMPIC STAGE PODIUM)
 // =========================================================================
@@ -378,65 +395,72 @@ function renderAll() {
     currentTab = 'weekly';
   }
 
-  // Olympic Stage 3-Column Stepped Podium (2nd Left • 1st Tall Gold Center • 3rd Right)
-  const top3 = [...students].sort((a, b) => b.weeklyPoints - a.weeklyPoints).slice(0, 3);
+// Olympic Stage 3-Column Stepped Podium (Supports Ties!)
+  const podiumGroups = getTop3PodiumGroups(students);
   const spotlightEl = document.getElementById('spotlight-content');
+  const hasAnyStudents = podiumGroups[1].length || podiumGroups[2].length || podiumGroups[3].length;
 
-  if (top3.length === 0) {
+  if (!hasAnyStudents) {
     spotlightEl.innerHTML = `
       <div class="col-span-full rounded-2xl border-2 border-white/25 bg-white/15 p-4 text-xs sm:text-sm font-bold text-white text-center">
         No students on the leaderboard yet! Sign in via <strong>Teacher Admin</strong> above to add your class roster.
       </div>
     `;
   } else {
-    const s1 = top3[0];
-    const s2 = top3[1];
-    const s3 = top3[2];
-
-    const renderTeamChip = (student) => {
-      if (!isAdmin || !appConfig.enableHouses || !student) return '';
-      const hObj = appConfig.houses.find(h => h.name === student.house);
-      if (!hObj) return '';
-      return `<span class="inline-block mt-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-[10px] font-extrabold">${escapeHtml(hObj.icon)} Team ${escapeHtml(student.house)}</span>`;
-    };
-
-    const card2nd = s2 ? `
-      <div onclick="openStudentModal('${s2.id}')"
-        class="order-2 sm:order-1 cursor-pointer rounded-2xl bg-white/15 hover:bg-white/20 backdrop-blur-xs border-2 border-slate-200/80 border-b-[6px] border-b-slate-300 p-4 text-center transition">
-        <div class="w-12 h-12 mx-auto rounded-2xl bg-white/20 border-2 border-slate-200/70 flex items-center justify-center text-2xl mb-1.5">
-          ${s2.avatar}
+    const renderPedestalMembers = (group, isFirst) => group.map(st => {
+      const hObj = (isAdmin && appConfig.enableHouses) ? appConfig.houses.find(h => h.name === st.house) : null;
+      const teamChip = hObj
+        ? `<span class="inline-block mt-1 px-2 py-0.5 rounded-full ${isFirst ? 'bg-white/85 text-slate-900 border border-amber-600/30' : 'bg-white/20 text-white'} text-[10px] font-extrabold">${escapeHtml(hObj.icon)} Team ${escapeHtml(st.house)}</span>`
+        : '';
+      return `
+        <div onclick="openStudentModal('${st.id}')" class="cursor-pointer hover:scale-[1.03] transition flex flex-col items-center">
+          <div class="${isFirst ? 'w-13 h-13 bg-white border-2 border-amber-500 border-b-4 text-3xl' : 'w-11 h-11 bg-white/20 border-2 border-white/50 text-2xl'} mx-auto rounded-2xl flex items-center justify-center mb-1">
+            ${st.avatar}
+          </div>
+          <div class="font-extrabold ${isFirst ? 'text-base sm:text-lg text-slate-950' : 'text-sm sm:text-base text-white'} truncate max-w-full">${escapeHtml(st.name)}</div>
+          ${teamChip}
         </div>
-        <div class="inline-block px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-900 text-[10px] font-extrabold uppercase">🥈 2nd Place</div>
-        <div class="mt-1 font-extrabold text-base text-white truncate">${escapeHtml(s2.name)}</div>
-        <div class="text-xs font-extrabold text-violet-100">${s2.weeklyPoints} weekly pts</div>
-        ${renderTeamChip(s2)}
+      `;
+    }).join('');
+
+    const g1 = podiumGroups[1];
+    const g2 = podiumGroups[2];
+    const g3 = podiumGroups[3];
+
+    const card2nd = g2.length ? `
+      <div class="order-2 sm:order-1 rounded-2xl bg-white/15 backdrop-blur-xs border-2 border-slate-200/80 border-b-[6px] border-b-slate-300 p-4 text-center space-y-2">
+        <div class="inline-block px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-900 text-[10px] font-extrabold uppercase">
+          🥈 ${g2.length > 1 ? '2nd Place Tie' : '2nd Place'}
+        </div>
+        <div class="flex flex-wrap justify-center gap-3">
+          ${renderPedestalMembers(g2, false)}
+        </div>
+        <div class="text-xs font-extrabold text-violet-100">${g2[0].weeklyPoints} weekly pts</div>
       </div>
     ` : '<div></div>';
 
-    const card1st = s1 ? `
-      <div onclick="openStudentModal('${s1.id}')"
-        class="order-1 sm:order-2 cursor-pointer rounded-3xl bg-gradient-to-b from-amber-300 via-amber-400 to-yellow-500 hover:brightness-105 border-2 border-amber-100 border-b-[8px] border-b-amber-600 p-5 text-center text-slate-950 sm:-mt-3 shadow-xl transition">
-        <div class="text-xl leading-none mb-1">👑</div>
-        <div class="w-14 h-14 mx-auto rounded-2xl bg-white border-2 border-amber-500 border-b-4 flex items-center justify-center text-3xl mb-2">
-          ${s1.avatar}
+    const card1st = g1.length ? `
+      <div class="order-1 sm:order-2 rounded-3xl bg-gradient-to-b from-amber-300 via-amber-400 to-yellow-500 border-2 border-amber-100 border-b-[8px] border-b-amber-600 p-5 text-center text-slate-950 sm:-mt-3 shadow-xl space-y-2">
+        <div class="text-xl leading-none">👑</div>
+        <div class="inline-block px-3 py-0.5 rounded-full bg-slate-950 text-amber-300 text-[10px] font-extrabold uppercase tracking-wider">
+          🥇 ${g1.length > 1 ? '1st Place Tie' : '1st Place Champion'}
         </div>
-        <div class="inline-block px-3 py-0.5 rounded-full bg-slate-950 text-amber-300 text-[10px] font-extrabold uppercase tracking-wider">🥇 1st Place Champion</div>
-        <div class="mt-1 font-extrabold text-lg text-slate-950 truncate">${escapeHtml(s1.name)}</div>
-        <div class="text-xs font-extrabold text-amber-950">${s1.weeklyPoints} weekly pts</div>
-        ${(isAdmin && appConfig.enableHouses) ? `<span class="inline-block mt-1.5 px-2.5 py-0.5 rounded-full bg-white/85 text-slate-900 border border-amber-600/30 text-[10px] font-extrabold">Team ${escapeHtml(s1.house)}</span>` : ''}
+        <div class="flex flex-wrap justify-center gap-3">
+          ${renderPedestalMembers(g1, true)}
+        </div>
+        <div class="text-xs font-extrabold text-amber-950">${g1[0].weeklyPoints} weekly pts</div>
       </div>
     ` : '<div></div>';
 
-    const card3rd = s3 ? `
-      <div onclick="openStudentModal('${s3.id}')"
-        class="order-3 cursor-pointer rounded-2xl bg-white/15 hover:bg-white/20 backdrop-blur-xs border-2 border-orange-300/80 border-b-[6px] border-b-orange-400 p-3.5 text-center transition">
-        <div class="w-11 h-11 mx-auto rounded-2xl bg-white/20 border-2 border-orange-300/70 flex items-center justify-center text-2xl mb-1.5">
-          ${s3.avatar}
+    const card3rd = g3.length ? `
+      <div class="order-3 rounded-2xl bg-white/15 backdrop-blur-xs border-2 border-orange-300/80 border-b-[6px] border-b-orange-400 p-3.5 text-center space-y-2">
+        <div class="inline-block px-2.5 py-0.5 rounded-full bg-orange-200 text-orange-950 text-[10px] font-extrabold uppercase">
+          🥉 ${g3.length > 1 ? '3rd Place Tie' : '3rd Place'}
         </div>
-        <div class="inline-block px-2.5 py-0.5 rounded-full bg-orange-200 text-orange-950 text-[10px] font-extrabold uppercase">🥉 3rd Place</div>
-        <div class="mt-1 font-extrabold text-base text-white truncate">${escapeHtml(s3.name)}</div>
-        <div class="text-xs font-extrabold text-violet-100">${s3.weeklyPoints} weekly pts</div>
-        ${renderTeamChip(s3)}
+        <div class="flex flex-wrap justify-center gap-3">
+          ${renderPedestalMembers(g3, false)}
+        </div>
+        <div class="text-xs font-extrabold text-violet-100">${g3[0].weeklyPoints} weekly pts</div>
       </div>
     ` : '<div></div>';
 
@@ -501,15 +525,22 @@ function renderLeaderboard() {
       return a.name.localeCompare(b.name);
     });
   } else {
-    filtered.sort((a, b) => b.weeklyPoints - a.weeklyPoints);
+    filtered.sort((a, b) => (b.weeklyPoints - a.weeklyPoints) || a.name.localeCompare(b.name));
   }
+
+  let prevPts = null;
+  let prevRank = 1;
 
   listEl.innerHTML = filtered.map((s, idx) => {
     const houseObj = appConfig.houses.find(h => h.name === s.house) || appConfig.houses[0];
     const palette = COLOR_PALETTES[houseObj?.color] || COLOR_PALETTES.brown;
 
+    const rank = (idx > 0 && s.weeklyPoints === prevPts) ? prevRank : idx + 1;
+    prevPts = s.weeklyPoints;
+    prevRank = rank;
+
     const rankBadge = currentTab === 'weekly'
-      ? (idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`)
+      ? (rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`)
       : '⭐';
 
     const teamPillHtml = (isAdmin && appConfig.enableHouses && houseObj)
@@ -1117,8 +1148,13 @@ async function submitTeacherLogin(e) {
 }
 
 function openResetConfirmModal() {
-  const top3 = [...students].sort((a, b) => b.weeklyPoints - a.weeklyPoints).slice(0, 3);
-  const summary = top3.map((s, i) => `<strong>#${i + 1} ${escapeHtml(s.name)}</strong> (${s.weeklyPoints} pts)`).join(', ');
+    const groups = getTop3PodiumGroups(students);
+    const winners = [
+      ...groups[1].map(s => ({ rank: 1, s })),
+      ...groups[2].map(s => ({ rank: 2, s })),
+      ...groups[3].map(s => ({ rank: 3, s }))
+    ];
+    const summary = winners.map(w => `<strong>#${w.rank} ${escapeHtml(w.s.name)}</strong> (${w.s.weeklyPoints} pts)`).join(', ');
   document.getElementById('reset-modal-body').innerHTML =
     `This will archive Week ${weekNumber}’s podium (${summary || 'no students'}) into the <strong>Hall of Fame</strong>, reset all students’ <strong>Weekly Points</strong> to 0, and clear the weekly cheer counter.`;
   document.getElementById('reset-modal').classList.remove('hidden');
@@ -1129,17 +1165,16 @@ function closeResetConfirmModal() {
 }
 
 async function executeCrownAndReset() {
-  const top3 = [...students].sort((a, b) => b.weeklyPoints - a.weeklyPoints).slice(0, 3);
-  const stamp = formatActivityTimestamp();
-  const today = new Date().toISOString().slice(0, 10);
+    const groups = getTop3PodiumGroups(students);
+    const podiumData = [
+      ...groups[1].map(s => ({ rank: 1, name: s.name, house: s.house, points: s.weeklyPoints })),
+      ...groups[2].map(s => ({ rank: 2, name: s.name, house: s.house, points: s.weeklyPoints })),
+      ...groups[3].map(s => ({ rank: 3, name: s.name, house: s.house, points: s.weeklyPoints }))
+    ];
+    const stamp = formatActivityTimestamp();
+    const today = new Date().toISOString().slice(0, 10);
 
-  if (top3.length > 0 && sb) {
-    const podiumData = top3.map((s, idx) => ({
-      rank: idx + 1,
-      name: s.name,
-      house: s.house,
-      points: s.weeklyPoints
-    }));
+    if (podiumData.length > 0 && sb) {
     await sb.from('hall_of_fame').insert({
       id: 'wk_' + Date.now(),
       week_label: `Week ${weekNumber}`,
