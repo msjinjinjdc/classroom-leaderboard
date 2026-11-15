@@ -512,8 +512,8 @@ function renderAll() {
     spotlightEl.innerHTML = `
       <div class="col-span-full rounded-2xl border-2 border-white/25 bg-white/15 p-4 text-xs sm:text-sm font-bold text-white text-center">
         ${students.length === 0
-          ? 'No students on the leaderboard yet! Sign in via <strong>Teacher Admin</strong> above to add your class roster.'
-          : '🌟 New week started! Earn weekly points to claim a spot on the Top 3 Podium!'}
+        ? 'No students on the leaderboard yet! Sign in via <strong>Teacher Admin</strong> above to add your class roster.'
+        : '🌟 New week started! Earn weekly points to claim a spot on the Top 3 Podium!'}
       </div>
     `;
   } else {
@@ -1214,7 +1214,14 @@ async function handleAddStudent(e) {
 
   const name = nameInput.value.trim();
   if (!name) return;
-  const avatars = ['🦊', '🦁', '🐼', '🐯', '🦉', '🐺', '🐨', '🦄', '🐸', '🐧'];
+  const avatars = ['🧸', '🦄', '🐣', '🐥', '🐰', '🐼', '🐨',
+    '🦊', '🐶', '🐱', '🐯', '🦁', '🐮', '🐷', '🐸',
+    '🐹', '🐻‍❄️', '🦦', '🦔', '🦙', '🦥', '🐧', '🦩', '🦭', '🐬',
+    '🦋', '🐝', '🐞', '🐢', '🦕', '🦖', '🧙',
+    '🤖', '👾', '👻', '👽', '🍓', '🍑', '🍒', '🍉', '🧁', '🍩', '🍦', '🧋', '🚀', '🍀', '🌸', '🌻', '🍄', '🐭', '🐻',
+    '🙊', '🐒', '🦍', '🐕', '🐩', '🦮', '🐕‍🦺', '🐺', '🦝',
+    '🐈', '🐘', '🐔', '🐓', '🐤', '🐦', '🕊️', '🦅', '🦆', '🦢', '🦉', '🦤',
+    '🦚', '🦜', '🐦‍⬛', '🪿', '🐦‍🔥', '🐉'];
   const badge = badgeInput.value.trim();
 
   const newStudent = {
