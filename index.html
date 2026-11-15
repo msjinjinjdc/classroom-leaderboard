@@ -185,8 +185,7 @@
     <!-- Tactile Pop Full-Width Navigation Tabs & Team Filters -->
     <div id="primary-tabs-wrapper" class="w-full flex flex-col gap-3">
       <!-- Primary View Tabs -->
-      <div id="primary-tabs"
-        class="w-full rounded-3xl bg-white p-2 border-2 border-slate-200 border-b-4">
+      <div id="primary-tabs" class="w-full rounded-3xl bg-white p-2 border-2 border-slate-200 border-b-4">
         <button id="tab-weekly" onclick="switchTab('weekly')"
           class="w-full px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold bg-sky-500 text-white border-b-4 border-sky-700 transition">
           Weekly Standings
@@ -224,7 +223,8 @@
         </span>
         <h2 class="mt-2 text-2xl font-extrabold">Weekly Top 3 Hall of Fame</h2>
         <p class="mt-1 text-xs sm:text-sm text-amber-50 max-w-4xl">
-          Celebrating our weekly Top 3 podium champions all semester long! Congratulations to all students who earned a spot on the podium!
+          Celebrating our weekly Top 3 podium champions all semester long! Congratulations to all students who earned a
+          spot on the podium!
         </p>
       </div>
       <div id="hall-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
@@ -236,8 +236,7 @@
         class="rounded-3xl bg-white border-2 border-slate-200 border-b-4 p-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 class="text-lg font-extrabold text-slate-900">Classroom Reward Menu</h2>
-          <p class="text-xs text-slate-500 mt-0.5"> Talk to <strong
-            >Ms. JinJin</strong> to redeem rewards.</p>
+          <p class="text-xs text-slate-500 mt-0.5"> Talk to <strong>Ms. JinJin</strong> to redeem rewards.</p>
         </div>
         <div class="flex items-center gap-2">
           <span id="shop-count-badge"
@@ -272,7 +271,8 @@
           </div>
           <div>
             <h3 id="modal-name" class="text-xl font-extrabold text-slate-900">Student</h3>
-            <span id="modal-house-badge" class="inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold">Team
+            <span id="modal-house-badge"
+              class="inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold">Team
               Brown</span>
           </div>
         </div>
@@ -317,11 +317,11 @@
           class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-extrabold text-sm">✕</button>
       </div>
       <p class="text-xs text-slate-500">
-        Sign in with your Supabase teacher email and password to manage points and students.
+        Please sign in with your email and password.
       </p>
       <form onsubmit="submitTeacherLogin(event)" class="space-y-3">
         <div>
-          <label class="block text-[11px] font-extrabold text-slate-600 mb-1">Teacher Email</label>
+          <label class="block text-[11px] font-extrabold text-slate-600 mb-1">Email</label>
           <input id="admin-email-input" type="email" required placeholder="teacher@school.edu"
             class="w-full px-3.5 py-2.5 rounded-2xl border-2 border-slate-300 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500" />
         </div>
@@ -345,7 +345,8 @@
     onclick="if(event.target===this) closeResetConfirmModal()">
     <div
       class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-slate-200 border-b-[6px] border-b-slate-300">
-      <div class="w-12 h-12 rounded-2xl bg-amber-100 border-2 border-amber-300 text-amber-600 flex items-center justify-center text-2xl mb-3">
+      <div
+        class="w-12 h-12 rounded-2xl bg-amber-100 border-2 border-amber-300 text-amber-600 flex items-center justify-center text-2xl mb-3">
         👑
       </div>
       <h3 class="text-lg font-extrabold text-slate-900">Crown Top 3 & Reset Weekly Points?</h3>
@@ -367,7 +368,8 @@
     onclick="if(event.target===this) closeDeleteModal()">
     <div
       class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-slate-200 border-b-[6px] border-b-slate-300">
-      <div class="w-12 h-12 rounded-2xl bg-rose-100 border-2 border-rose-200 text-rose-600 flex items-center justify-center text-2xl mb-3">
+      <div
+        class="w-12 h-12 rounded-2xl bg-rose-100 border-2 border-rose-200 text-rose-600 flex items-center justify-center text-2xl mb-3">
         🗑️
       </div>
       <h3 class="text-lg font-extrabold text-slate-900">Remove Student?</h3>
