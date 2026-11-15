@@ -11,132 +11,144 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 
-<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col selection:bg-indigo-600 selection:text-white">
+<body class="min-h-screen flex flex-col selection:bg-sky-500 selection:text-white">
 
-  <!-- Top Navigation Header -->
-  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
-      <!-- Brand / Class Title -->
-      <div class="flex items-center gap-3">
-        <div id="brand-badge"
-          class="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center text-xl shadow-md">
-          🏆
-        </div>
-        <div>
-          <div class="flex items-center gap-2 flex-wrap">
-            <h1 id="header-title" class="text-base sm:text-lg font-extrabold tracking-tight text-slate-900">
-              Ms. JinJin's Class Leaderboard
-            </h1>
-            <span id="mode-pill"
-              class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
-              Student View
-            </span>
-            <span id="live-status-pill"
-              class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
-              Connecting...
-            </span>
+  <!-- Top Navigation Header (Exact same max-w-6xl width as main sections) -->
+  <div class="sticky top-0 z-30 w-full pt-3 bg-[#F4F7FB]/85 backdrop-blur-md">
+    <div class="max-w-6xl w-full mx-auto px-4 sm:px-6">
+      <header
+        class="w-full relative overflow-hidden bg-white border-2 border-slate-200 border-b-[5px] border-b-slate-300 rounded-3xl shadow-xs">
+        <!-- Aurora Top Accent Ribbon -->
+        <div class="h-2 w-full bg-gradient-to-r from-sky-400 via-violet-500 to-fuchsia-500"></div>
+
+        <div class="px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
+          <!-- Brand / Class Title -->
+          <div class="flex items-center gap-3.5">
+            <div id="brand-badge"
+              class="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-700 border-b-4 border-indigo-950 text-white flex items-center justify-center text-xl shadow-xs shrink-0">
+              🏆
+            </div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h1 id="header-title" class="text-base sm:text-lg font-extrabold tracking-tight text-slate-900">
+                  Ms. JinJin's Class Leaderboard
+                </h1>
+                <span id="mode-pill"
+                  class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-100 text-emerald-700 border-2 border-emerald-300">
+                  Student View
+                </span>
+                <span id="live-status-pill"
+                  class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-slate-100 text-slate-600 border-2 border-slate-200">
+                  Connecting...
+                </span>
+              </div>
+              <p id="header-subtitle" class="text-xs text-slate-500 font-semibold mt-0.5">
+                Live Classroom Points & Weekly Top 3 Podium
+              </p>
+            </div>
           </div>
-          <p id="header-subtitle" class="text-xs text-slate-500">
-            Live Classroom Points & Weekly Top 3 Podium
-          </p>
-        </div>
-      </div>
 
-      <!-- Action Buttons -->
-      <div class="flex flex-wrap items-center gap-2">
-        <button onclick="loadFromSupabase()"
-          class="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
-          <span>↻</span> Sync
-        </button>
-        <button id="admin-toggle-btn" onclick="handleAdminToggle()"
-          class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 shadow-xs transition">
-          <span>🔒</span> Teacher Admin
-        </button>
-      </div>
+          <!-- Action Buttons -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="loadFromSupabase()"
+              class="inline-flex items-center gap-1 px-3 py-2 rounded-2xl text-xs font-extrabold bg-slate-100 text-slate-700 hover:bg-slate-200 border-b-4 border-slate-300 active:translate-y-0.5 transition">
+              <span>↻</span> Sync
+            </button>
+            <button id="admin-toggle-btn" onclick="handleAdminToggle()"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-extrabold bg-slate-900 text-white hover:bg-slate-800 border-b-4 border-slate-950 active:translate-y-0.5 transition">
+              <span>🔒</span> Teacher Admin
+            </button>
+          </div>
+        </div>
+      </header>
     </div>
-  </header>
+  </div>
 
-  <!-- Teacher Admin Control Bar (Visible when unlocked) -->
-  <section id="admin-toolbar" class="hidden bg-amber-50 border-b border-amber-200/90">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 space-y-3">
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <div class="flex items-center gap-2">
-          <span
-            class="px-2.5 py-1 rounded-lg bg-amber-500 text-white text-xs font-extrabold uppercase tracking-wider">Admin
-            Mode</span>
-          <span id="admin-email-badge" class="text-xs font-bold text-amber-900">Signed in as Teacher</span>
+  <!-- Teacher Admin Control Bar (Exact same max-w-6xl width) -->
+  <section id="admin-toolbar" class="hidden w-full pt-4">
+    <div class="max-w-6xl w-full mx-auto px-4 sm:px-6">
+      <div
+        class="w-full rounded-3xl bg-amber-50 border-2 border-amber-300 border-b-[5px] border-b-amber-400 p-4 sm:p-5 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span
+              class="px-2.5 py-1 rounded-xl bg-amber-500 border-b-2 border-amber-700 text-white text-xs font-extrabold uppercase tracking-wider">Admin
+              Mode</span>
+            <span id="admin-email-badge" class="text-xs font-bold text-amber-950">Signed in as Teacher</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="openResetConfirmModal()"
+              class="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-2xl text-xs font-extrabold bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-500 hover:to-orange-500 border-b-4 border-rose-900 text-white active:translate-y-0.5 transition">
+              <span>👑</span> Crown Top 3 & Reset Week
+            </button>
+          </div>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <button onclick="openResetConfirmModal()"
-            class="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-700 hover:to-orange-700 text-white shadow-sm transition">
-            <span>👑</span> Crown Top 3 & Reset Week
+
+        <!-- Add Student Form -->
+        <form onsubmit="handleAddStudent(event)"
+          class="grid grid-cols-1 sm:grid-cols-12 gap-2 pt-2 border-t border-amber-200/80">
+          <input id="add-name" type="text" required placeholder="New student name (e.g. Elena G.)"
+            class="sm:col-span-4 px-3.5 py-2 rounded-2xl bg-white border-2 border-amber-300 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500" />
+          <select id="add-house"
+            class="sm:col-span-3 px-3 py-2 rounded-2xl bg-white border-2 border-amber-300 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-500">
+          </select>
+          <input id="add-badge" type="text" placeholder="Starting badge (e.g. Fast Finisher)"
+            class="sm:col-span-3 px-3 py-2 rounded-2xl bg-white border-2 border-amber-300 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500" />
+          <button type="submit"
+            class="sm:col-span-2 px-4 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-500 border-b-4 border-emerald-800 text-white text-xs font-extrabold active:translate-y-0.5 transition">
+            + Add Student
           </button>
-        </div>
+        </form>
       </div>
-
-      <!-- Add Student Form -->
-      <form onsubmit="handleAddStudent(event)"
-        class="grid grid-cols-1 sm:grid-cols-12 gap-2 pt-2 border-t border-amber-200/70">
-        <input id="add-name" type="text" required placeholder="New student name (e.g. Elena G.)"
-          class="sm:col-span-4 px-3 py-2 rounded-xl bg-white border border-amber-300 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-500" />
-        <select id="add-house"
-          class="sm:col-span-3 px-3 py-2 rounded-xl bg-white border border-amber-300 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500">
-        </select>
-        <input id="add-badge" type="text" placeholder="Starting badge (e.g. Fast Finisher)"
-          class="sm:col-span-3 px-3 py-2 rounded-xl bg-white border border-amber-300 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-500" />
-        <button type="submit"
-          class="sm:col-span-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold shadow-xs transition">
-          + Add Student
-        </button>
-      </form>
     </div>
   </section>
 
   <!-- Main Workspace -->
   <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
 
-    <!-- Top 3 Weekly Podium Spotlight Banner -->
+    <!-- Olympic Stage Gradient Weekly Top 3 Podium -->
     <section id="spotlight-banner"
-      class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 text-white p-5 sm:p-7 shadow-lg">
-      <div class="absolute -right-12 -top-12 w-56 h-56 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
-      <div class="absolute -left-10 -bottom-14 w-48 h-48 rounded-full bg-amber-300/15 blur-2xl pointer-events-none">
-      </div>
+      class="w-full relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 border-2 border-violet-400/70 border-b-[6px] border-b-indigo-900 text-white p-5 sm:p-6 shadow-xl">
+      <div class="absolute -right-12 -top-12 w-56 h-56 rounded-full bg-amber-300/20 blur-2xl pointer-events-none"></div>
+      <div class="absolute -left-10 -bottom-14 w-52 h-52 rounded-full bg-sky-300/20 blur-2xl pointer-events-none"></div>
 
-      <div class="relative flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-        <div class="space-y-2.5 flex-1">
-          <div
-            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 border border-amber-300/40 text-amber-200 text-xs font-extrabold uppercase tracking-wider">
-            <span>👑</span> Current Weekly Top 3 • Week <span id="week-number-label">11</span>
-          </div>
-          <div id="spotlight-content" class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-            <!-- Populated by JS -->
-          </div>
-        </div>
-        <div class="flex flex-col items-start lg:items-end justify-end gap-2 self-stretch shrink-0">
-          <button id="btn-confetti" onclick="triggerCelebration()"
-            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs sm:text-sm shadow-lg shadow-amber-950/20 transition transform active:scale-95">
-            <span>🎉</span> Celebrate Top 3
-          </button>
-          <p id="cheer-counter-label" class="text-xs font-bold text-amber-200/95 tracking-tight text-right">
+      <!-- Podium Header Row -->
+      <div class="relative flex flex-wrap items-center justify-between gap-3 mb-5">
+        <span
+          class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-400 text-slate-950 border-b-2 border-amber-600 text-xs font-extrabold uppercase tracking-wider shadow-xs">
+          <span>👑</span> Weekly Top 3 Podium • Week <span id="week-number-label">11</span>
+        </span>
+        <div class="flex flex-wrap items-center gap-3">
+          <p id="cheer-counter-label" class="text-xs font-bold text-amber-200 tracking-tight">
             👏 0 / 0 people cheered for the winners!
           </p>
+          <button id="btn-confetti" onclick="triggerCelebration()"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 border-b-4 border-amber-600 font-extrabold text-xs sm:text-sm active:translate-y-0.5 transition">
+            <span>🎉</span> Celebrate Top 3
+          </button>
         </div>
+      </div>
+
+      <!-- Olympic Stage 3-Column Stepped Pedestals -->
+      <div id="spotlight-content" class="relative grid grid-cols-1 sm:grid-cols-3 gap-3 items-end pt-2">
+        <!-- Populated by JS -->
       </div>
     </section>
 
-    <!-- Class Goal Progress Bar -->
-    <section id="goal-card" class="rounded-2xl bg-white border border-slate-200/90 p-4 sm:p-5 shadow-xs space-y-3">
+    <!-- Tactile Pop Class Goal Progress Bar -->
+    <section id="goal-card"
+      class="w-full rounded-3xl bg-white border-2 border-slate-200 border-b-4 p-4 sm:p-5 space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center gap-2">
           <span class="text-lg">🎯</span>
-          <span id="goal-title-display" class="text-xs sm:text-sm font-extrabold text-slate-800">Class Milestone: 20
+          <span id="goal-title-display" class="text-xs sm:text-sm font-extrabold text-slate-900">Class Milestone: 20
             Credits = Ice Cream for Everyone!</span>
         </div>
-        <span id="goal-numbers" class="text-xs font-bold text-indigo-600">0 / 20 credits</span>
+        <span id="goal-numbers" class="text-xs font-extrabold text-sky-600">0 / 20 credits</span>
       </div>
-      <div class="w-full h-3 rounded-full bg-slate-100 overflow-hidden border border-slate-200/70">
+      <div class="w-full h-3.5 rounded-full bg-slate-100 overflow-hidden border-2 border-slate-200">
         <div id="goal-bar-fill"
-          class="h-full rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-amber-400 transition-all duration-500"
+          class="h-full rounded-full bg-gradient-to-r from-sky-400 via-violet-500 to-amber-400 transition-all duration-500"
           style="width: 0%"></div>
       </div>
 
@@ -147,47 +159,48 @@
           <label class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Milestone
             Title</label>
           <input id="inline-goal-title" type="text"
-            class="w-full px-3 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50/40 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            class="w-full px-3 py-1.5 rounded-2xl border-2 border-sky-200 bg-sky-50/40 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500" />
         </div>
         <div class="sm:col-span-2">
           <label class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Earned
             Credits</label>
           <input id="inline-goal-current" type="number" min="0" step="any"
-            class="w-full px-3 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50/40 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            class="w-full px-3 py-1.5 rounded-2xl border-2 border-sky-200 bg-sky-50/40 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500" />
         </div>
         <div class="sm:col-span-2">
           <label class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Target
             Credits</label>
           <input id="inline-goal-target" type="number" min="0.01" step="any"
-            class="w-full px-3 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50/40 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            class="w-full px-3 py-1.5 rounded-2xl border-2 border-sky-200 bg-sky-50/40 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500" />
         </div>
         <div class="sm:col-span-3">
           <button type="button" onclick="saveInlineMilestone()"
-            class="w-full px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold transition">
+            class="w-full px-3 py-2 rounded-2xl bg-sky-500 hover:bg-sky-400 border-b-4 border-sky-700 text-white text-xs font-extrabold active:translate-y-0.5 transition">
             Save Milestone
           </button>
         </div>
       </div>
     </section>
 
-    <!-- Navigation Tabs & Team Filters -->
-    <div class="flex flex-wrap items-center justify-between gap-3">
+    <!-- Tactile Pop Full-Width Navigation Tabs & Team Filters -->
+    <div id="primary-tabs-wrapper" class="w-full flex flex-col gap-3">
       <!-- Primary View Tabs -->
-      <div class="inline-flex flex-wrap rounded-2xl bg-white p-1.5 border border-slate-200/90 shadow-xs gap-1">
+      <div id="primary-tabs"
+        class="w-full rounded-3xl bg-white p-2 border-2 border-slate-200 border-b-4">
         <button id="tab-weekly" onclick="switchTab('weekly')"
-          class="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-indigo-600 text-white shadow-xs transition">
+          class="w-full px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold bg-sky-500 text-white border-b-4 border-sky-700 transition">
           Weekly Standings
         </button>
         <button id="tab-allTime" onclick="switchTab('allTime')"
-          class="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition">
+          class="w-full px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold text-slate-600 hover:bg-slate-100 transition">
           All-Time Points
         </button>
         <button id="tab-hall" onclick="switchTab('hall')"
-          class="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition">
+          class="w-full px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold text-slate-600 hover:bg-slate-100 transition">
           🏅 Hall of Fame
         </button>
         <button id="tab-shop" onclick="switchTab('shop')"
-          class="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition">
+          class="w-full px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold text-slate-600 hover:bg-slate-100 transition">
           🎁 Reward Menu
         </button>
       </div>
@@ -197,13 +210,14 @@
     </div>
 
     <!-- VIEW 1: Leaderboard Standings -->
-    <section id="view-leaderboard" class="space-y-3">
-      <div id="leaderboard-list" class="space-y-2.5"></div>
+    <section id="view-leaderboard" class="w-full space-y-3">
+      <div id="leaderboard-list" class="space-y-3"></div>
     </section>
 
     <!-- VIEW 2: Hall of Fame (Top 3 Podiums per Week) -->
-    <section id="view-hall" class="hidden space-y-4">
-      <div class="rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 p-6 text-white shadow-md">
+    <section id="view-hall" class="hidden w-full space-y-4">
+      <div
+        class="rounded-3xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 border-2 border-amber-300 border-b-[5px] border-b-rose-800 p-6 text-white shadow-md">
         <span
           class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-xs font-extrabold uppercase tracking-wider">
           🏆 Podium Archive
@@ -218,20 +232,21 @@
     </section>
 
     <!-- VIEW 3: Reward Menu / Point Shop -->
-    <section id="view-shop" class="hidden space-y-4">
-      <div class="rounded-2xl bg-white border border-slate-200 p-5 flex flex-wrap items-center justify-between gap-3">
+    <section id="view-shop" class="hidden w-full space-y-4">
+      <div
+        class="rounded-3xl bg-white border-2 border-slate-200 border-b-4 p-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 class="text-lg font-extrabold text-slate-900">Classroom Reward Menu</h2>
-          <p class="text-xs text-slate-500 mt-0.5">Students can view reward prices here. Unlock <strong>Teacher
+          <p class="text-xs text-slate-500 mt-0.5">Students can view reward prices here. Sign in to <strong>Teacher
               Admin</strong> to edit rewards or redeem them on any student row.</p>
         </div>
         <div class="flex items-center gap-2">
           <span id="shop-count-badge"
-            class="px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 text-xs font-bold border border-indigo-100">
+            class="px-3 py-1.5 rounded-2xl bg-sky-50 text-sky-700 text-xs font-extrabold border-2 border-sky-200">
             4 Active Classroom Rewards
           </span>
           <button id="shop-add-btn" onclick="addRewardItem()"
-            class="hidden px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold shadow-xs transition">
+            class="hidden px-3.5 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-500 border-b-4 border-emerald-800 text-white text-xs font-extrabold active:translate-y-0.5 transition">
             + Add Reward
           </button>
         </div>
@@ -248,31 +263,32 @@
   <div id="student-modal"
     class="hidden fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4"
     onclick="if(event.target===this) closeStudentModal()">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-5">
+    <div
+      class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-slate-200 border-b-[6px] border-b-slate-300 space-y-5">
       <div class="flex items-start justify-between gap-3">
         <div class="flex items-center gap-3.5">
           <div id="modal-avatar"
-            class="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-3xl">
+            class="w-14 h-14 rounded-2xl bg-sky-50 border-2 border-sky-200 flex items-center justify-center text-3xl">
             🦊
           </div>
           <div>
             <h3 id="modal-name" class="text-xl font-extrabold text-slate-900">Student</h3>
-            <span id="modal-house-badge" class="inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-bold">Team
+            <span id="modal-house-badge" class="inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold">Team
               Brown</span>
           </div>
         </div>
         <button onclick="closeStudentModal()"
-          class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm flex items-center justify-center">✕</button>
+          class="w-9 h-9 rounded-2xl bg-slate-100 hover:bg-slate-200 border-b-2 border-slate-300 text-slate-600 font-extrabold text-sm flex items-center justify-center">✕</button>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
-        <div class="rounded-2xl bg-amber-50 border border-amber-200/80 p-3.5">
-          <div class="text-[11px] font-bold uppercase tracking-wider text-amber-700">Weekly Points</div>
+        <div class="rounded-2xl bg-amber-50 border-2 border-amber-200 border-b-4 p-3.5">
+          <div class="text-[11px] font-extrabold uppercase tracking-wider text-amber-700">Weekly Points</div>
           <div id="modal-weekly" class="text-2xl font-extrabold text-amber-900 mt-0.5">0</div>
         </div>
-        <div class="rounded-2xl bg-indigo-50 border border-indigo-200/80 p-3.5">
-          <div class="text-[11px] font-bold uppercase tracking-wider text-indigo-700">All-Time Points</div>
-          <div id="modal-alltime" class="text-2xl font-extrabold text-indigo-900 mt-0.5">0</div>
+        <div class="rounded-2xl bg-sky-50 border-2 border-sky-200 border-b-4 p-3.5">
+          <div class="text-[11px] font-extrabold uppercase tracking-wider text-sky-700">All-Time Points</div>
+          <div id="modal-alltime" class="text-2xl font-extrabold text-sky-900 mt-0.5">0</div>
         </div>
       </div>
 
@@ -290,54 +306,56 @@
     </div>
   </div>
 
-<!-- Teacher Login Modal (Supabase Email + Password Auth) -->
-<div id="pin-modal"
-  class="hidden fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4"
-  onclick="if(event.target===this) closePinModal()">
-  <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-    <div class="flex items-center justify-between">
-      <h3 class="text-lg font-extrabold text-slate-900">🔒 Teacher Admin Login</h3>
-      <button onclick="closePinModal()"
-        class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm">✕</button>
+  <!-- Teacher Login Modal (Supabase Email + Password Auth) -->
+  <div id="pin-modal"
+    class="hidden fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4"
+    onclick="if(event.target===this) closePinModal()">
+    <div
+      class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-slate-200 border-b-[6px] border-b-slate-300 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-extrabold text-slate-900">🔒 Teacher Admin Login</h3>
+        <button onclick="closePinModal()"
+          class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-extrabold text-sm">✕</button>
+      </div>
+      <p class="text-xs text-slate-500">
+        Sign in with your Supabase teacher email and password to manage points and students.
+      </p>
+      <form onsubmit="submitTeacherLogin(event)" class="space-y-3">
+        <div>
+          <label class="block text-[11px] font-extrabold text-slate-600 mb-1">Teacher Email</label>
+          <input id="admin-email-input" type="email" required placeholder="teacher@school.edu"
+            class="w-full px-3.5 py-2.5 rounded-2xl border-2 border-slate-300 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-extrabold text-slate-600 mb-1">Password</label>
+          <input id="admin-password-input" type="password" required placeholder="Enter your password"
+            class="w-full px-3.5 py-2.5 rounded-2xl border-2 border-slate-300 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500" />
+        </div>
+        <p id="pin-error" class="hidden text-xs font-extrabold text-rose-600">Invalid email or password.</p>
+        <button id="admin-login-submit" type="submit"
+          class="w-full py-2.5 rounded-2xl bg-sky-500 hover:bg-sky-400 border-b-4 border-sky-700 text-white text-xs font-extrabold active:translate-y-0.5 transition">
+          Sign In as Teacher
+        </button>
+      </form>
     </div>
-    <p class="text-xs text-slate-500">
-      Sign in with your email and password to manage points and students.
-    </p>
-    <form onsubmit="submitTeacherLogin(event)" class="space-y-3">
-      <div>
-        <label class="block text-[11px] font-bold text-slate-600 mb-1">Email</label>
-        <input id="admin-email-input" type="email" required placeholder="teacher@school.edu"
-          class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-      </div>
-      <div>
-        <label class="block text-[11px] font-bold text-slate-600 mb-1">Password</label>
-        <input id="admin-password-input" type="password" required placeholder="Enter your password"
-          class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-      </div>
-      <p id="pin-error" class="hidden text-xs font-bold text-rose-600">Invalid email or password.</p>
-      <button id="admin-login-submit" type="submit"
-        class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold transition">
-        Sign In as Teacher
-      </button>
-    </form>
   </div>
-</div>
 
   <!-- Confirm Crown Top 3 & Reset Modal -->
   <div id="reset-modal"
     class="hidden fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4"
     onclick="if(event.target===this) closeResetConfirmModal()">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
-      <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-2xl mb-3">
+    <div
+      class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-slate-200 border-b-[6px] border-b-slate-300">
+      <div class="w-12 h-12 rounded-2xl bg-amber-100 border-2 border-amber-300 text-amber-600 flex items-center justify-center text-2xl mb-3">
         👑
       </div>
       <h3 class="text-lg font-extrabold text-slate-900">Crown Top 3 & Reset Weekly Points?</h3>
       <p id="reset-modal-body" class="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed"></p>
       <div class="mt-6 flex items-center justify-end gap-2">
         <button onclick="closeResetConfirmModal()"
-          class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100">Cancel</button>
+          class="px-4 py-2 rounded-2xl text-xs font-extrabold text-slate-600 hover:bg-slate-100">Cancel</button>
         <button onclick="executeCrownAndReset()"
-          class="px-4 py-2.5 rounded-xl text-xs font-extrabold bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-700 hover:to-orange-700 text-white shadow-md">
+          class="px-4 py-2.5 rounded-2xl text-xs font-extrabold bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-500 hover:to-orange-500 border-b-4 border-rose-900 text-white shadow-md">
           Confirm & Start New Week
         </button>
       </div>
@@ -348,17 +366,18 @@
   <div id="delete-modal"
     class="hidden fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4"
     onclick="if(event.target===this) closeDeleteModal()">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200">
-      <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-2xl mb-3">
+    <div
+      class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-slate-200 border-b-[6px] border-b-slate-300">
+      <div class="w-12 h-12 rounded-2xl bg-rose-100 border-2 border-rose-200 text-rose-600 flex items-center justify-center text-2xl mb-3">
         🗑️
       </div>
       <h3 class="text-lg font-extrabold text-slate-900">Remove Student?</h3>
       <p id="delete-modal-body" class="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed"></p>
       <div class="mt-6 flex items-center justify-end gap-2">
         <button onclick="closeDeleteModal()"
-          class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100">Cancel</button>
+          class="px-4 py-2 rounded-2xl text-xs font-extrabold text-slate-600 hover:bg-slate-100">Cancel</button>
         <button onclick="executeDeleteStudent()"
-          class="px-4 py-2.5 rounded-xl text-xs font-extrabold bg-rose-600 hover:bg-rose-700 text-white shadow-md">
+          class="px-4 py-2.5 rounded-2xl text-xs font-extrabold bg-rose-600 hover:bg-rose-500 border-b-4 border-rose-800 text-white shadow-md">
           Delete Student
         </button>
       </div>

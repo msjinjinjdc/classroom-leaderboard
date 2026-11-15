@@ -18,7 +18,7 @@ const COLOR_PALETTES = {
 
 let appConfig = {
   classTitle: "Ms. JinJin's Class Leaderboard",
-    goalTitle: "Class Milestone: 20 Credits = Ice Cream for Everyone!",
+  goalTitle: "Class Milestone: 20 Credits = Ice Cream for Everyone!",
   goalCurrentCredits: 0,
   goalTarget: 20,
   enableHouses: true,
@@ -38,8 +38,12 @@ let appConfig = {
   ],
   defaultAddAmount: 10,
   presetBadges: [
+    'Top Helper',
     '3-Week Streak',
-    'Quick Thinker',   
+    'Lab Leader',
+    'Quick Thinker',
+    'Peer Mentor',
+    'Team Spirit',
     '100% Homework',
     'Focus Pro',
     'Kindness Star',
@@ -49,7 +53,7 @@ let appConfig = {
   showGoalBar: true,
   showShopTab: true,
   showConfetti: true,
-  soundEffects: false
+  soundEffects: true
 };
 
 // =========================================================================
@@ -69,17 +73,17 @@ let students = [];
 let hallOfFame = [];
 
 // =========================================================================
-// 4. SUPABASE INITIALIZATION, FETCHING & REAL-TIME SYNC
+// 4. SUPABASE INITIALIZATION, AUTH SESSION & REAL-TIME SYNC
 // =========================================================================
 function setLiveStatus(text, style = 'neutral') {
   const pill = document.getElementById('live-status-pill');
   const sub = document.getElementById('header-subtitle');
   if (!pill) return;
   const styles = {
-    live: 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200',
-    warn: 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300',
-    error: 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700 border border-rose-200',
-    neutral: 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200'
+    live: 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-100 text-emerald-700 border-2 border-emerald-300',
+    warn: 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-100 text-amber-800 border-2 border-amber-300',
+    error: 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-rose-100 text-rose-700 border-2 border-rose-300',
+    neutral: 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-slate-100 text-slate-600 border-2 border-slate-200'
   };
   pill.className = styles[style] || styles.neutral;
   pill.textContent = text;
@@ -103,7 +107,7 @@ async function initSupabase() {
 
   try {
     sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
+
     // Check if teacher is already signed in from a previous session
     const { data: { session } } = await sb.auth.getSession();
     isAdmin = Boolean(session?.user);
@@ -115,6 +119,7 @@ async function initSupabase() {
       currentTeacherEmail = newSession?.user?.email || '';
       renderAll();
     });
+
     await loadFromSupabase();
 
     // Real-time live subscription across all student & teacher devices
@@ -238,12 +243,12 @@ function showToast(message, color = 'indigo') {
   if (!container) return;
   const styles = {
     indigo: 'bg-slate-900 text-white border-slate-700',
-    emerald: 'bg-emerald-600 text-white border-emerald-500',
-    amber: 'bg-amber-500 text-slate-950 border-amber-400',
-    rose: 'bg-rose-600 text-white border-rose-500'
+    emerald: 'bg-emerald-600 text-white border-emerald-800',
+    amber: 'bg-amber-400 text-slate-950 border-amber-600',
+    rose: 'bg-rose-600 text-white border-rose-800'
   };
   const el = document.createElement('div');
-  el.className = `px-4 py-2.5 rounded-2xl border shadow-xl text-xs font-extrabold transition-all duration-300 ${styles[color] || styles.indigo}`;
+  el.className = `px-4 py-2.5 rounded-2xl border-2 border-b-4 shadow-xl text-xs font-extrabold transition-all duration-300 ${styles[color] || styles.indigo}`;
   el.textContent = message;
   container.appendChild(el);
   setTimeout(() => {
@@ -306,7 +311,7 @@ function updateCheerLabel() {
 }
 
 // =========================================================================
-// 6. RENDERING ENGINE
+// 6. RENDERING ENGINE (TACTILE POP + OLYMPIC STAGE PODIUM)
 // =========================================================================
 function renderAll() {
   document.getElementById('header-title').textContent = appConfig.classTitle;
@@ -318,22 +323,22 @@ function renderAll() {
   const adminToolbar = document.getElementById('admin-toolbar');
   const goalEditor = document.getElementById('goal-admin-editor');
   const shopAddBtn = document.getElementById('shop-add-btn');
+  const emailBadge = document.getElementById('admin-email-badge');
 
   if (isAdmin) {
     modePill.textContent = 'Teacher Admin';
-    modePill.className = 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300';
+    modePill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-100 text-amber-800 border-2 border-amber-300';
     adminBtn.innerHTML = '<span>🔓</span> Sign Out';
-    adminBtn.className = 'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 hover:bg-amber-400 shadow-xs transition';
+    adminBtn.className = 'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-extrabold bg-violet-600 text-white hover:bg-violet-500 border-b-4 border-violet-800 active:translate-y-0.5 transition';
     adminToolbar.classList.remove('hidden');
     goalEditor.classList.remove('hidden');
     if (shopAddBtn) shopAddBtn.classList.remove('hidden');
-        const emailBadge = document.getElementById('admin-email-badge');
-        if (emailBadge) emailBadge.textContent = currentTeacherEmail ? `Signed in as ${currentTeacherEmail}` : 'Signed in as Teacher';   
+    if (emailBadge) emailBadge.textContent = currentTeacherEmail ? `Signed in as ${currentTeacherEmail}` : 'Signed in as Teacher';
   } else {
     modePill.textContent = 'Student View';
-    modePill.className = 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200';
+    modePill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-100 text-emerald-700 border-2 border-emerald-300';
     adminBtn.innerHTML = '<span>🔒</span> Teacher Admin';
-    adminBtn.className = 'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 shadow-xs transition';
+    adminBtn.className = 'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-extrabold bg-slate-900 text-white hover:bg-slate-800 border-b-4 border-slate-950 active:translate-y-0.5 transition';
     adminToolbar.classList.add('hidden');
     goalEditor.classList.add('hidden');
     if (shopAddBtn) shopAddBtn.classList.add('hidden');
@@ -369,46 +374,78 @@ function renderAll() {
     currentTab = 'weekly';
   }
 
+  // Olympic Stage 3-Column Stepped Podium (2nd Left • 1st Tall Gold Center • 3rd Right)
   const top3 = [...students].sort((a, b) => b.weeklyPoints - a.weeklyPoints).slice(0, 3);
-  const podiumMeta = [
-    { medal: '🥇 1st Place', ring: 'border-amber-300/60 bg-white/15' },
-    { medal: '🥈 2nd Place', ring: 'border-slate-200/40 bg-white/10' },
-    { medal: '🥉 3rd Place', ring: 'border-orange-300/40 bg-white/10' }
-  ];
+  const spotlightEl = document.getElementById('spotlight-content');
 
   if (top3.length === 0) {
-    document.getElementById('spotlight-content').innerHTML = `
-      <div class="col-span-full rounded-2xl border border-white/20 bg-white/10 p-4 text-xs sm:text-sm font-semibold text-indigo-100">
-        No students on the leaderboard yet! Unlock <strong>Teacher Admin</strong> above to add your class roster.
+    spotlightEl.innerHTML = `
+      <div class="col-span-full rounded-2xl border-2 border-white/25 bg-white/15 p-4 text-xs sm:text-sm font-bold text-white text-center">
+        No students on the leaderboard yet! Sign in via <strong>Teacher Admin</strong> above to add your class roster.
       </div>
     `;
   } else {
-    document.getElementById('spotlight-content').innerHTML = top3.map((s, idx) => {
-      const houseObj = appConfig.houses.find(h => h.name === s.house);
-      const teamLine = (isAdmin && appConfig.enableHouses && houseObj)
-        ? `<span class="inline-block mt-1 px-2 py-0.5 rounded-full bg-white/15 text-[11px] font-bold">${escapeHtml(houseObj.icon)} Team ${escapeHtml(s.house)}</span>`
-        : '';
-      return `
-        <div onclick="openStudentModal('${s.id}')" class="cursor-pointer rounded-2xl border ${podiumMeta[idx].ring} p-3.5 backdrop-blur-xs hover:bg-white/20 transition">
-          <div class="text-[11px] font-extrabold uppercase tracking-wider text-amber-200">${podiumMeta[idx].medal}</div>
-          <div class="mt-1 flex items-center gap-2">
-            <span class="text-xl">${s.avatar}</span>
-            <span class="font-extrabold text-base truncate">${escapeHtml(s.name)}</span>
-          </div>
-          <div class="mt-0.5 text-xs font-bold text-indigo-100">${s.weeklyPoints} weekly pts</div>
-          ${teamLine}
+    const s1 = top3[0];
+    const s2 = top3[1];
+    const s3 = top3[2];
+
+    const renderTeamChip = (student) => {
+      if (!isAdmin || !appConfig.enableHouses || !student) return '';
+      const hObj = appConfig.houses.find(h => h.name === student.house);
+      if (!hObj) return '';
+      return `<span class="inline-block mt-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-[10px] font-extrabold">${escapeHtml(hObj.icon)} Team ${escapeHtml(student.house)}</span>`;
+    };
+
+    const card2nd = s2 ? `
+      <div onclick="openStudentModal('${s2.id}')"
+        class="order-2 sm:order-1 cursor-pointer rounded-2xl bg-white/15 hover:bg-white/20 backdrop-blur-xs border-2 border-slate-200/80 border-b-[6px] border-b-slate-300 p-4 text-center transition">
+        <div class="w-12 h-12 mx-auto rounded-2xl bg-white/20 border-2 border-slate-200/70 flex items-center justify-center text-2xl mb-1.5">
+          ${s2.avatar}
         </div>
-      `;
-    }).join('');
+        <div class="inline-block px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-900 text-[10px] font-extrabold uppercase">🥈 2nd Place</div>
+        <div class="mt-1 font-extrabold text-base text-white truncate">${escapeHtml(s2.name)}</div>
+        <div class="text-xs font-extrabold text-violet-100">${s2.weeklyPoints} weekly pts</div>
+        ${renderTeamChip(s2)}
+      </div>
+    ` : '<div></div>';
+
+    const card1st = s1 ? `
+      <div onclick="openStudentModal('${s1.id}')"
+        class="order-1 sm:order-2 cursor-pointer rounded-3xl bg-gradient-to-b from-amber-300 via-amber-400 to-yellow-500 hover:brightness-105 border-2 border-amber-100 border-b-[8px] border-b-amber-600 p-5 text-center text-slate-950 sm:-mt-3 shadow-xl transition">
+        <div class="text-xl leading-none mb-1">👑</div>
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-white border-2 border-amber-500 border-b-4 flex items-center justify-center text-3xl mb-2">
+          ${s1.avatar}
+        </div>
+        <div class="inline-block px-3 py-0.5 rounded-full bg-slate-950 text-amber-300 text-[10px] font-extrabold uppercase tracking-wider">🥇 1st Place Champion</div>
+        <div class="mt-1 font-extrabold text-lg text-slate-950 truncate">${escapeHtml(s1.name)}</div>
+        <div class="text-xs font-extrabold text-amber-950">${s1.weeklyPoints} weekly pts</div>
+        ${(isAdmin && appConfig.enableHouses) ? `<span class="inline-block mt-1.5 px-2.5 py-0.5 rounded-full bg-white/85 text-slate-900 border border-amber-600/30 text-[10px] font-extrabold">Team ${escapeHtml(s1.house)}</span>` : ''}
+      </div>
+    ` : '<div></div>';
+
+    const card3rd = s3 ? `
+      <div onclick="openStudentModal('${s3.id}')"
+        class="order-3 cursor-pointer rounded-2xl bg-white/15 hover:bg-white/20 backdrop-blur-xs border-2 border-orange-300/80 border-b-[6px] border-b-orange-400 p-3.5 text-center transition">
+        <div class="w-11 h-11 mx-auto rounded-2xl bg-white/20 border-2 border-orange-300/70 flex items-center justify-center text-2xl mb-1.5">
+          ${s3.avatar}
+        </div>
+        <div class="inline-block px-2.5 py-0.5 rounded-full bg-orange-200 text-orange-950 text-[10px] font-extrabold uppercase">🥉 3rd Place</div>
+        <div class="mt-1 font-extrabold text-base text-white truncate">${escapeHtml(s3.name)}</div>
+        <div class="text-xs font-extrabold text-violet-100">${s3.weeklyPoints} weekly pts</div>
+        ${renderTeamChip(s3)}
+      </div>
+    ` : '<div></div>';
+
+    spotlightEl.innerHTML = card2nd + card1st + card3rd;
   }
 
   const filterBar = document.getElementById('house-filter-bar');
   if (isAdmin && appConfig.enableHouses && (currentTab === 'weekly' || currentTab === 'allTime')) {
     filterBar.classList.remove('hidden');
-    const allBtn = `<button onclick="setHouseFilter('ALL')" class="px-3 py-1.5 rounded-xl text-xs font-extrabold transition ${currentHouseFilter === 'ALL' ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}">All Teams</button>`;
+    const allBtn = `<button onclick="setHouseFilter('ALL')" class="px-3.5 py-1.5 rounded-2xl text-xs font-extrabold transition ${currentHouseFilter === 'ALL' ? 'bg-slate-900 text-white border-b-4 border-black' : 'bg-white text-slate-600 border-2 border-slate-200 border-b-4 hover:bg-slate-50'}">All Teams</button>`;
     const teamBtns = appConfig.houses.map(h => {
       const active = currentHouseFilter === h.name;
-      return `<button onclick="setHouseFilter('${escapeHtml(h.name)}')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition ${active ? 'bg-indigo-600 text-white shadow-xs' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'}">${escapeHtml(h.icon)} ${escapeHtml(h.name)}</button>`;
+      return `<button onclick="setHouseFilter('${escapeHtml(h.name)}')" class="px-3.5 py-1.5 rounded-2xl text-xs font-extrabold transition ${active ? 'bg-sky-500 text-white border-b-4 border-sky-700' : 'bg-white text-slate-700 border-2 border-slate-200 border-b-4 hover:bg-slate-50'}">${escapeHtml(h.icon)} ${escapeHtml(h.name)}</button>`;
     }).join('');
     filterBar.innerHTML = allBtn + teamBtns;
   } else {
@@ -424,8 +461,8 @@ function renderAll() {
     const btn = document.getElementById(`tab-${t}`);
     if (!btn) return;
     btn.className = t === currentTab
-      ? 'px-3.5 py-2 rounded-xl text-xs font-extrabold bg-indigo-600 text-white shadow-xs transition'
-      : 'px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition';
+      ? 'w-full px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold bg-sky-500 text-white border-b-4 border-sky-700 transition'
+      : 'w-full px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold text-slate-600 hover:bg-slate-100 transition';
   });
 
   if (currentTab === 'hall') {
@@ -447,7 +484,7 @@ function renderLeaderboard() {
   });
 
   if (!filtered.length) {
-    listEl.innerHTML = `<div class="rounded-2xl bg-white border border-slate-200 p-8 text-center text-sm text-slate-500">No students to display yet. Unlock <strong>Teacher Admin</strong> to add students!</div>`;
+    listEl.innerHTML = `<div class="rounded-3xl bg-white border-2 border-slate-200 border-b-4 p-8 text-center text-sm font-semibold text-slate-500">No students to display yet. Sign in via <strong>Teacher Admin</strong> to add students!</div>`;
     return;
   }
 
@@ -476,7 +513,7 @@ function renderLeaderboard() {
       : '';
 
     const badgesHtml = (s.badges || []).map(b =>
-      `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[11px] font-semibold">⭐ ${escapeHtml(b)}${isAdmin ? ` <button type="button" onclick="event.stopPropagation(); removeBadgeFromStudent('${s.id}', '${escapeHtml(b)}')" title="Remove badge" class="ml-0.5 text-slate-400 hover:text-rose-600 font-extrabold">✕</button>` : ''}</span>`
+      `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-violet-50 text-violet-700 border border-violet-200 text-[11px] font-bold">⭐ ${escapeHtml(b)}${isAdmin ? ` <button type="button" onclick="event.stopPropagation(); removeBadgeFromStudent('${s.id}', '${escapeHtml(b)}')" title="Remove badge" class="ml-0.5 text-violet-400 hover:text-rose-600 font-extrabold">✕</button>` : ''}</span>`
     ).join('');
 
     const badgePresetsHtml = (appConfig.presetBadges || []).map(b =>
@@ -484,9 +521,9 @@ function renderLeaderboard() {
     ).join('');
 
     const badgeAwarderHtml = `
-      <div class="inline-flex flex-wrap items-center gap-1.5 bg-amber-50/80 border border-amber-200 rounded-xl p-1">
+      <div class="inline-flex flex-wrap items-center gap-1.5 bg-amber-50/90 border-2 border-amber-200 rounded-2xl p-1">
         <select id="badge-select-${s.id}" onchange="handleBadgeDropdownChange('${s.id}', this.value)"
-          class="px-2 py-1 rounded-lg bg-white border border-amber-300 text-xs font-bold text-slate-700 focus:outline-none">
+          class="px-2 py-1 rounded-xl bg-white border border-amber-300 text-xs font-bold text-slate-700 focus:outline-none">
           <option value="">🏅 Award Badge...</option>
           ${badgePresetsHtml}
           <option value="__CUSTOM__">✏️ Custom Badge...</option>
@@ -494,14 +531,14 @@ function renderLeaderboard() {
         </select>
         <input id="badge-custom-${s.id}" type="text" placeholder="Type badge name"
           onkeydown="if(event.key==='Enter'){ event.preventDefault(); awardSelectedBadge('${s.id}'); }"
-          class="hidden w-32 px-2 py-1 rounded-lg bg-white border border-amber-300 text-xs font-semibold text-slate-800 focus:outline-none" />
+          class="hidden w-32 px-2 py-1 rounded-xl bg-white border border-amber-300 text-xs font-semibold text-slate-800 focus:outline-none" />
         <select id="badge-remove-select-${s.id}"
-          class="hidden px-2 py-1 rounded-lg bg-rose-50 border border-rose-300 text-xs font-bold text-rose-800 focus:outline-none">
+          class="hidden px-2 py-1 rounded-xl bg-rose-50 border border-rose-300 text-xs font-bold text-rose-800 focus:outline-none">
           <option value="">Select preset to delete...</option>
           ${badgePresetsHtml}
         </select>
         <button id="badge-action-btn-${s.id}" type="button" onclick="awardSelectedBadge('${s.id}')"
-          class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-extrabold transition">
+          class="px-2.5 py-1 rounded-xl bg-amber-400 hover:bg-amber-300 border-b-2 border-amber-600 text-slate-950 text-xs font-extrabold transition">
           + Badge
         </button>
       </div>
@@ -509,34 +546,34 @@ function renderLeaderboard() {
 
     const rewardButtonsHtml = appConfig.rewards.map(r => `
       <button onclick="event.stopPropagation(); applyRewardDeduction('${s.id}', ${r.cost}, '${escapeHtml(r.fullName)}', '${escapeHtml(r.icon)}')"
-        class="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 text-[11px] font-extrabold transition">
+        class="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-800 border-2 border-rose-200 text-[11px] font-extrabold transition">
         -${r.cost} ${escapeHtml(r.icon)} ${escapeHtml(r.fullName)}
       </button>
     `).join('');
 
     const teamSelectHtml = appConfig.enableHouses ? `
       <select onclick="event.stopPropagation()" onchange="changeStudentTeam('${s.id}', this.value)"
-        class="px-2.5 py-1.5 rounded-xl bg-white border border-slate-300 text-xs font-bold text-slate-700">
+        class="px-2.5 py-1.5 rounded-xl bg-white border-2 border-slate-300 text-xs font-bold text-slate-700">
         ${appConfig.houses.map(h => `<option value="${escapeHtml(h.name)}" ${h.name === s.house ? 'selected' : ''}>${escapeHtml(h.icon)} ${escapeHtml(h.name)}</option>`).join('')}
       </select>
     ` : '';
 
     const adminControlsHtml = isAdmin ? `
       <div onclick="event.stopPropagation()" class="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2">
-        <div class="inline-flex items-center gap-1.5 bg-emerald-50/70 border border-emerald-200 rounded-xl p-1">
+        <div class="inline-flex items-center gap-1.5 bg-emerald-50/80 border-2 border-emerald-200 rounded-2xl p-1">
           <input id="custom-add-${s.id}" type="number" min="1" value="${appConfig.defaultAddAmount}"
-            class="w-16 px-2 py-1 rounded-lg bg-white border border-emerald-300 text-xs font-extrabold text-slate-900 focus:outline-none" />
+            class="w-16 px-2 py-1 rounded-xl bg-white border border-emerald-300 text-xs font-extrabold text-slate-900 focus:outline-none" />
           <button onclick="applyCustomAdd('${s.id}')"
-            class="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition">
+            class="px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 border-b-2 border-emerald-800 text-white text-xs font-extrabold transition">
             + Add
           </button>
         </div>
         <button onclick="applyBrainTeaserAdd('${s.id}')"
-          class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold shadow-xs transition">
+          class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 border-b-2 border-emerald-800 text-white text-xs font-extrabold transition">
           +2 🧠 Brain Teaser
         </button>
         <button onclick="applyDailyGoodStudentAdd('${s.id}')"
-          class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold shadow-xs transition">
+          class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 border-b-2 border-emerald-800 text-white text-xs font-extrabold transition">
           +1 🌟 Daily good student reward point
         </button>
         <div class="flex flex-wrap items-center gap-1.5">
@@ -546,7 +583,7 @@ function renderLeaderboard() {
         <div class="ml-auto flex items-center gap-1.5">
           ${teamSelectHtml}
           <button onclick="openDeleteModal('${s.id}')" title="Remove student"
-            class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-700 text-xs font-bold transition">
+            class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-100 border-b-2 border-slate-300 text-slate-600 hover:text-rose-700 text-xs font-bold transition">
             🗑️
           </button>
         </div>
@@ -557,13 +594,14 @@ function renderLeaderboard() {
     const secondaryLabel = currentTab === 'allTime' ? `${s.weeklyPoints} this week` : `${s.allTimePoints} all-time`;
 
     return `
-      <div onclick="openStudentModal('${s.id}')" class="cursor-pointer rounded-2xl bg-white border border-slate-200/90 hover:border-indigo-300 p-4 shadow-xs transition">
+      <div onclick="openStudentModal('${s.id}')"
+        class="cursor-pointer rounded-3xl bg-white border-2 border-slate-200 border-b-4 hover:border-sky-400 hover:border-b-sky-500 p-4 transition">
         <div class="flex items-center justify-between gap-3">
           <div class="flex items-center gap-3 min-w-0">
-            <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-extrabold text-sm text-slate-700 shrink-0">
+            <div class="w-10 h-10 rounded-2xl bg-slate-100 border-2 border-slate-200 flex items-center justify-center font-extrabold text-sm text-slate-700 shrink-0">
               ${rankBadge}
             </div>
-            <div class="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-xl shrink-0">
+            <div class="w-10 h-10 rounded-2xl bg-sky-50 border-2 border-sky-200 flex items-center justify-center text-xl shrink-0">
               ${s.avatar}
             </div>
             <div class="min-w-0">
@@ -578,7 +616,7 @@ function renderLeaderboard() {
           </div>
 
           <div class="text-right shrink-0">
-            <div class="text-lg sm:text-xl font-extrabold text-indigo-600">${primaryPts} <span class="text-xs font-bold text-slate-400">pts</span></div>
+            <div class="text-lg sm:text-xl font-extrabold text-sky-600">${primaryPts} <span class="text-xs font-bold text-slate-400">pts</span></div>
             <div class="text-[11px] font-semibold text-slate-400">${secondaryLabel}</div>
           </div>
         </div>
@@ -591,14 +629,14 @@ function renderLeaderboard() {
 function renderHallOfFame() {
   const grid = document.getElementById('hall-grid');
   if (!hallOfFame.length) {
-    grid.innerHTML = `<div class="col-span-full rounded-2xl bg-white border border-slate-200 p-8 text-center text-sm text-slate-500">No weekly podiums archived yet. Click <strong>Crown Top 3 & Reset Week</strong> in Teacher Admin mode at the end of the week!</div>`;
+    grid.innerHTML = `<div class="col-span-full rounded-3xl bg-white border-2 border-slate-200 border-b-4 p-8 text-center text-sm font-semibold text-slate-500">No weekly podiums archived yet. Click <strong>Crown Top 3 & Reset Week</strong> in Teacher Admin mode at the end of the week!</div>`;
     return;
   }
 
   const rankStyles = {
-    1: { label: '🥇 1st Place', card: 'bg-amber-50/90 border-amber-200 text-amber-950' },
-    2: { label: '🥈 2nd Place', card: 'bg-slate-50 border-slate-200 text-slate-900' },
-    3: { label: '🥉 3rd Place', card: 'bg-orange-50/70 border-orange-200 text-orange-950' }
+    1: { label: '🥇 1st Place', card: 'bg-amber-50 border-amber-300 text-amber-950' },
+    2: { label: '🥈 2nd Place', card: 'bg-slate-50 border-slate-300 text-slate-900' },
+    3: { label: '🥉 3rd Place', card: 'bg-orange-50 border-orange-300 text-orange-950' }
   };
 
   grid.innerHTML = hallOfFame.map(entry => {
@@ -608,7 +646,7 @@ function renderHallOfFame() {
         ? `<span class="ml-1.5 text-[11px] font-bold opacity-75">• Team ${escapeHtml(p.house)}</span>`
         : '';
       return `
-        <div class="flex items-center justify-between px-3.5 py-2.5 rounded-xl border ${st.card}">
+        <div class="flex items-center justify-between px-3.5 py-2.5 rounded-2xl border-2 ${st.card}">
           <div>
             <span class="text-xs font-extrabold mr-2">${st.label}</span>
             <span class="text-sm font-extrabold">${escapeHtml(p.name)}</span>
@@ -620,10 +658,10 @@ function renderHallOfFame() {
     }).join('');
 
     return `
-      <div class="rounded-2xl bg-white border border-slate-200 p-5 shadow-xs space-y-3">
+      <div class="rounded-3xl bg-white border-2 border-slate-200 border-b-4 p-5 space-y-3">
         <div class="flex items-center justify-between">
           <span class="text-base font-extrabold text-slate-900">🏆 ${escapeHtml(entry.weekLabel)}</span>
-          <span class="text-xs font-semibold text-slate-400">${escapeHtml(entry.date)}</span>
+          <span class="text-xs font-bold text-slate-400">${escapeHtml(entry.date)}</span>
         </div>
         <div class="space-y-2">${podiumRows}</div>
       </div>
@@ -641,48 +679,48 @@ function renderShop() {
   grid.innerHTML = appConfig.rewards.map((r, idx) => {
     if (isAdmin) {
       return `
-        <div class="rounded-2xl bg-white border-2 border-indigo-200 p-4 shadow-xs space-y-2.5">
+        <div class="rounded-3xl bg-white border-2 border-sky-300 border-b-4 p-4 space-y-2.5">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-extrabold uppercase tracking-wider text-indigo-600">Reward #${idx + 1}</span>
-            <button onclick="removeRewardItem(${idx})" class="text-xs font-bold text-rose-600 hover:text-rose-800">✕ Remove</button>
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-sky-600">Reward #${idx + 1}</span>
+            <button onclick="removeRewardItem(${idx})" class="text-xs font-extrabold text-rose-600 hover:text-rose-800">✕ Remove</button>
           </div>
           <div class="grid grid-cols-3 gap-2">
             <div>
               <label class="block text-[10px] font-bold text-slate-400 mb-0.5">Icon</label>
               <input type="text" value="${escapeHtml(r.icon)}" onchange="updateRewardField(${idx}, 'icon', this.value)"
-                class="w-full px-2 py-1.5 rounded-xl border border-slate-300 text-center text-sm font-bold" />
+                class="w-full px-2 py-1.5 rounded-xl border-2 border-slate-300 text-center text-sm font-bold" />
             </div>
             <div class="col-span-2">
               <label class="block text-[10px] font-bold text-slate-400 mb-0.5">Point Cost</label>
               <input type="number" min="1" value="${r.cost}" onchange="updateRewardField(${idx}, 'cost', this.value)"
-                class="w-full px-2.5 py-1.5 rounded-xl border border-slate-300 text-xs font-extrabold" />
+                class="w-full px-2.5 py-1.5 rounded-xl border-2 border-slate-300 text-xs font-extrabold" />
             </div>
           </div>
           <div>
             <label class="block text-[10px] font-bold text-slate-400 mb-0.5">Reward Name</label>
             <input type="text" value="${escapeHtml(r.fullName)}" onchange="updateRewardField(${idx}, 'fullName', this.value)"
-              class="w-full px-2.5 py-1.5 rounded-xl border border-slate-300 text-xs font-extrabold" />
+              class="w-full px-2.5 py-1.5 rounded-xl border-2 border-slate-300 text-xs font-extrabold" />
           </div>
           <div>
             <label class="block text-[10px] font-bold text-slate-400 mb-0.5">Description</label>
             <textarea rows="2" onchange="updateRewardField(${idx}, 'desc', this.value)"
-              class="w-full px-2.5 py-1.5 rounded-xl border border-slate-300 text-xs">${escapeHtml(r.desc)}</textarea>
+              class="w-full px-2.5 py-1.5 rounded-xl border-2 border-slate-300 text-xs">${escapeHtml(r.desc)}</textarea>
           </div>
         </div>
       `;
     }
 
     return `
-      <div class="rounded-2xl bg-white border border-slate-200 p-5 shadow-xs flex flex-col justify-between space-y-3">
+      <div class="rounded-3xl bg-white border-2 border-slate-200 border-b-4 p-5 flex flex-col justify-between space-y-3">
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <span class="text-3xl">${escapeHtml(r.icon)}</span>
-            <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-extrabold">-${r.cost} pts</span>
+            <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300 text-xs font-extrabold">-${r.cost} pts</span>
           </div>
           <h3 class="text-base font-extrabold text-slate-900">${escapeHtml(r.fullName)}</h3>
           <p class="text-xs text-slate-500 leading-relaxed">${escapeHtml(r.desc)}</p>
         </div>
-        <div class="pt-2 border-t border-slate-100 text-[11px] font-semibold text-slate-400">
+        <div class="pt-2 border-t border-slate-100 text-[11px] font-bold text-slate-400">
           Deducts from All-Time Points only
         </div>
       </div>
@@ -761,11 +799,16 @@ async function applyCustomAdd(studentId) {
   renderAll();
 
   if (sb) {
-    await sb.from('students').update({
+    const { error } = await sb.from('students').update({
       weekly_points: s.weeklyPoints,
       all_time_points: s.allTimePoints,
       history: s.history
     }).eq('id', studentId);
+    if (error) {
+      showToast('Permission denied: ' + error.message, 'rose');
+      await loadFromSupabase(true);
+      return;
+    }
   }
   showToast(`+${delta} pts awarded to ${s.name}!`, 'emerald');
 }
@@ -780,10 +823,15 @@ async function applyBrainTeaserAdd(studentId) {
   renderAll();
 
   if (sb) {
-    await sb.from('students').update({
+    const { error } = await sb.from('students').update({
       all_time_points: s.allTimePoints,
       history: s.history
     }).eq('id', studentId);
+    if (error) {
+      showToast('Permission denied: ' + error.message, 'rose');
+      await loadFromSupabase(true);
+      return;
+    }
   }
   showToast(`+2 All-Time pts (Brain Teaser) awarded to ${s.name}!`, 'emerald');
 }
@@ -798,10 +846,15 @@ async function applyDailyGoodStudentAdd(studentId) {
   renderAll();
 
   if (sb) {
-    await sb.from('students').update({
+    const { error } = await sb.from('students').update({
       all_time_points: s.allTimePoints,
       history: s.history
     }).eq('id', studentId);
+    if (error) {
+      showToast('Permission denied: ' + error.message, 'rose');
+      await loadFromSupabase(true);
+      return;
+    }
   }
   showToast(`+1 All-Time pt (Daily good student reward point) awarded to ${s.name}!`, 'emerald');
 }
@@ -819,10 +872,15 @@ async function applyRewardDeduction(studentId, cost, rewardName, icon) {
   renderAll();
 
   if (sb) {
-    await sb.from('students').update({
+    const { error } = await sb.from('students').update({
       all_time_points: s.allTimePoints,
       history: s.history
     }).eq('id', studentId);
+    if (error) {
+      showToast('Permission denied: ' + error.message, 'rose');
+      await loadFromSupabase(true);
+      return;
+    }
   }
   showToast(`${s.name} redeemed ${icon} ${rewardName} (-${cost} All-Time pts)`, 'amber');
 }
@@ -856,16 +914,16 @@ function handleBadgeDropdownChange(studentId, val) {
     customInput.classList.remove('hidden');
     customInput.focus();
     actionBtn.textContent = '+ Badge';
-    actionBtn.className = 'px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-extrabold transition';
+    actionBtn.className = 'px-2.5 py-1 rounded-xl bg-amber-400 hover:bg-amber-300 border-b-2 border-amber-600 text-slate-950 text-xs font-extrabold transition';
   } else if (val === '__REMOVE_PRESET__') {
     removeSelect.classList.remove('hidden');
     removeSelect.focus();
     actionBtn.textContent = 'Remove Preset';
-    actionBtn.className = 'px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold transition';
+    actionBtn.className = 'px-2.5 py-1 rounded-xl bg-rose-600 hover:bg-rose-500 border-b-2 border-rose-800 text-white text-xs font-extrabold transition';
   } else {
     customInput.value = '';
     actionBtn.textContent = '+ Badge';
-    actionBtn.className = 'px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-extrabold transition';
+    actionBtn.className = 'px-2.5 py-1 rounded-xl bg-amber-400 hover:bg-amber-300 border-b-2 border-amber-600 text-slate-950 text-xs font-extrabold transition';
   }
 }
 
@@ -1000,7 +1058,7 @@ async function handleAddStudent(e) {
 }
 
 // =========================================================================
-// 8. ADMIN PIN, CROWN TOP 3 & MODALS
+// 8. SUPABASE TEACHER AUTHENTICATION (SIGN IN / SIGN OUT) & MODALS
 // =========================================================================
 async function handleAdminToggle() {
   if (isAdmin) {
@@ -1053,7 +1111,6 @@ async function submitTeacherLogin(e) {
   showToast('Signed in to Teacher Admin!', 'amber');
   renderAll();
 }
-
 
 function openResetConfirmModal() {
   const top3 = [...students].sort((a, b) => b.weeklyPoints - a.weeklyPoints).slice(0, 3);
@@ -1131,7 +1188,11 @@ async function executeDeleteStudent() {
   closeDeleteModal();
 
   if (sb) {
-    await sb.from('students').delete().eq('id', idToDelete);
+    const { error } = await sb.from('students').delete().eq('id', idToDelete);
+    if (error) {
+      showToast('Permission denied: ' + error.message, 'rose');
+      return;
+    }
   }
   students = students.filter(st => st.id !== idToDelete);
   if (cheerCount > students.length) {
@@ -1164,7 +1225,7 @@ function openStudentModal(studentId) {
   document.getElementById('modal-alltime').textContent = `${s.allTimePoints} pts`;
 
   document.getElementById('modal-badges').innerHTML = (s.badges && s.badges.length)
-    ? s.badges.map(b => `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold">⭐ ${escapeHtml(b)}${isAdmin ? ` <button type="button" onclick="removeBadgeFromStudent('${s.id}', '${escapeHtml(b)}')" title="Remove badge" class="ml-1 text-amber-700 hover:text-rose-600 font-extrabold">✕</button>` : ''}</span>`).join('')
+    ? s.badges.map(b => `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-50 border-2 border-amber-200 text-amber-900 text-xs font-extrabold">⭐ ${escapeHtml(b)}${isAdmin ? ` <button type="button" onclick="removeBadgeFromStudent('${s.id}', '${escapeHtml(b)}')" title="Remove badge" class="ml-1 text-amber-700 hover:text-rose-600 font-extrabold">✕</button>` : ''}</span>`).join('')
     : `<span class="text-xs text-slate-400">No badges earned yet.</span>`;
 
   const modalAwarder = document.getElementById('modal-badge-awarder');
@@ -1173,16 +1234,16 @@ function openStudentModal(studentId) {
       modalAwarder.classList.remove('hidden');
       modalAwarder.innerHTML = `
         <select id="modal-badge-select" onchange="const inp=document.getElementById('modal-badge-custom'); if(this.value==='__CUSTOM__'){inp.classList.remove('hidden');inp.focus();}else{inp.classList.add('hidden');inp.value='';}"
-          class="px-2.5 py-1.5 rounded-xl border border-amber-300 bg-amber-50/60 text-xs font-bold text-slate-800">
+          class="px-2.5 py-1.5 rounded-xl border-2 border-amber-300 bg-amber-50/60 text-xs font-bold text-slate-800">
           <option value="">🏅 Select preset badge...</option>
           ${(appConfig.presetBadges || []).map(b => `<option value="${escapeHtml(b)}">⭐ ${escapeHtml(b)}</option>`).join('')}
           <option value="__CUSTOM__">✏️ Custom Badge...</option>
         </select>
         <input id="modal-badge-custom" type="text" placeholder="Custom badge name"
           onkeydown="if(event.key==='Enter'){ event.preventDefault(); const v=this.value.trim(); if(v) awardBadgeToStudent('${s.id}', v); }"
-          class="hidden px-2.5 py-1.5 rounded-xl border border-amber-300 text-xs font-semibold" />
+          class="hidden px-2.5 py-1.5 rounded-xl border-2 border-amber-300 text-xs font-semibold" />
         <button type="button" onclick="const sel=document.getElementById('modal-badge-select'); const inp=document.getElementById('modal-badge-custom'); const val=sel.value==='__CUSTOM__'?inp.value:sel.value; if(val.trim()) awardBadgeToStudent('${s.id}', val);"
-          class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-extrabold transition">
+          class="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 border-b-2 border-amber-600 text-slate-950 text-xs font-extrabold transition">
           + Award Badge
         </button>
       `;
@@ -1193,7 +1254,7 @@ function openStudentModal(studentId) {
   }
 
   document.getElementById('modal-history').innerHTML = (s.history && s.history.length)
-    ? s.history.map(item => `<div class="px-3 py-2 rounded-xl bg-slate-50 border border-slate-100 text-xs font-medium text-slate-700">${escapeHtml(item)}</div>`).join('')
+    ? s.history.map(item => `<div class="px-3 py-2 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700">${escapeHtml(item)}</div>`).join('')
     : `<div class="text-xs text-slate-400">No recent activity recorded.</div>`;
 
   document.getElementById('student-modal').classList.remove('hidden');
