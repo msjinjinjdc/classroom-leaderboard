@@ -3,6 +3,7 @@
 // =========================================================================
 const SUPABASE_URL = "https://rqrnxivxqpnnqfptegit.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_gzGy_6tQBg4xWvQA-YMezg_0SAGV9t0";
+const CLASS_VIEWER_EMAIL = "class@msjinjin.com";
 
 // =========================================================================
 // 2. CLASSROOM CONFIGURATION & PALETTES
@@ -60,20 +61,22 @@ let appConfig = {
 // 3. APPLICATION STATE & SUPABASE CLIENT
 // =========================================================================
 let sb = null;
+let isGateUnlocked = false;
 let isAdmin = false;
 let currentTeacherEmail = '';
 let currentTab = 'weekly';
 let currentHouseFilter = 'ALL';
-let weekNumber = 11;
+let weekNumber = 1;
 let cheerCount = 0;
 let pendingDeleteId = null;
 let activeModalStudentId = null;
+let realtimeChannel = null;
 
 let students = [];
 let hallOfFame = [];
 
 // =========================================================================
-// 4. SUPABASE INITIALIZATION, AUTH SESSION & REAL-TIME SYNC
+// 4. SUPABASE INITIALIZATION, OPTION B CLASS GATE & REAL-TIME SYNC
 // =========================================================================
 function setLiveStatus(text, style = 'neutral') {
   const pill = document.getElementById('live-status-pill');
@@ -92,8 +95,34 @@ function setLiveStatus(text, style = 'neutral') {
   }
 }
 
+function applySessionState(session) {
+  const userEmail = (session?.user?.email || '').toLowerCase();
+  isGateUnlocked = Boolean(session?.user);
+  isAdmin = Boolean(session?.user) && userEmail !== CLASS_VIEWER_EMAIL.toLowerCase();
+  currentTeacherEmail = isAdmin ? (session?.user?.email || '') : '';
+
+  const gateScreen = document.getElementById('class-gate-screen');
+  const appShell = document.getElementById('app-shell');
+  if (gateScreen) gateScreen.classList.toggle('hidden', isGateUnlocked);
+  if (appShell) appShell.classList.toggle('hidden', !isGateUnlocked);
+}
+
+function startRealtimeSubscription() {
+  if (!sb || realtimeChannel) return;
+  realtimeChannel = sb.channel('classroom-live')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'students' }, () => loadFromSupabase(true))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'hall_of_fame' }, () => loadFromSupabase(true))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'class_settings' }, () => loadFromSupabase(true))
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        setLiveStatus('● Live Sync', 'live');
+      }
+    });
+}
+
 async function initSupabase() {
-  renderAll();
+  const gateTitle = document.getElementById('gate-class-title');
+  if (gateTitle) gateTitle.textContent = appConfig.classTitle;
 
   if (
     !SUPABASE_URL ||
@@ -101,46 +130,118 @@ async function initSupabase() {
     SUPABASE_URL.includes('PASTE_YOUR') ||
     SUPABASE_ANON_KEY.includes('PASTE_YOUR')
   ) {
+    // Allow previewing the unlocked UI if Supabase keys are not pasted yet
+    isGateUnlocked = true;
+    document.getElementById('class-gate-screen')?.classList.add('hidden');
+    document.getElementById('app-shell')?.classList.remove('hidden');
     setLiveStatus('Setup Needed', 'warn');
+    renderAll();
     return;
   }
 
   try {
     sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Check if teacher is already signed in from a previous session
+    // Check if student class viewer or teacher admin is already signed in
     const { data: { session } } = await sb.auth.getSession();
-    isAdmin = Boolean(session?.user);
-    currentTeacherEmail = session?.user?.email || '';
+    applySessionState(session);
 
-    // Listen for sign-in / sign-out state changes
-    sb.auth.onAuthStateChange((_event, newSession) => {
-      isAdmin = Boolean(newSession?.user);
-      currentTeacherEmail = newSession?.user?.email || '';
-      renderAll();
+    if (isGateUnlocked) {
+      await loadFromSupabase(true);
+      startRealtimeSubscription();
+    }
+
+    // Listen for sign-in / sign-out changes across tabs
+    sb.auth.onAuthStateChange(async (_event, newSession) => {
+      const wasUnlocked = isGateUnlocked;
+      applySessionState(newSession);
+      if (isGateUnlocked && !wasUnlocked) {
+        await loadFromSupabase(true);
+        startRealtimeSubscription();
+      } else {
+        renderAll();
+      }
     });
-
-    await loadFromSupabase();
-
-    // Real-time live subscription across all student & teacher devices
-    sb.channel('classroom-live')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'students' }, () => loadFromSupabase(true))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'hall_of_fame' }, () => loadFromSupabase(true))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'class_settings' }, () => loadFromSupabase(true))
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          setLiveStatus('● Live Sync', 'live');
-        }
-      });
   } catch (err) {
     console.error('Supabase init error:', err);
     setLiveStatus('Connection Error', 'error');
   }
 }
 
-async function loadFromSupabase(silent = false) {
+async function unlockClassGate(e) {
+  e.preventDefault();
+  const input = document.getElementById('class-gate-input');
+  const errEl = document.getElementById('class-gate-error');
+  const submitBtn = document.getElementById('class-gate-submit');
+  const card = document.getElementById('class-gate-card');
+  const password = (input?.value || '').trim();
+
   if (!sb) {
-    if (!silent) showToast('Paste your Supabase keys in app.js first.', 'amber');
+    showToast('Connect Supabase in app.js first.', 'amber');
+    return;
+  }
+
+  errEl?.classList.add('hidden');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Checking Class Password...';
+  }
+
+  const { data, error } = await sb.auth.signInWithPassword({
+    email: CLASS_VIEWER_EMAIL,
+    password
+  });
+
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Enter Classroom →';
+  }
+
+  if (error || !data?.session) {
+    errEl?.classList.remove('hidden');
+    if (card) {
+      card.classList.remove('animate-shake');
+      void card.offsetWidth;
+      card.classList.add('animate-shake');
+    }
+    if (input) {
+      input.value = '';
+      input.focus();
+    }
+    return;
+  }
+
+  if (input) input.value = '';
+  applySessionState(data.session);
+  await loadFromSupabase(true);
+  startRealtimeSubscription();
+  showToast('Welcome to the classroom leaderboard!', 'emerald');
+}
+
+async function lockClassGate() {
+  if (sb) {
+    if (realtimeChannel) {
+      await sb.removeChannel(realtimeChannel);
+      realtimeChannel = null;
+    }
+    await sb.auth.signOut();
+  }
+  students = [];
+  hallOfFame = [];
+  applySessionState(null);
+  showToast('Signed out of the classroom.', 'indigo');
+}
+
+function openPinModalFromGate() {
+  document.getElementById('admin-password-input').value = '';
+  document.getElementById('pin-error').classList.add('hidden');
+  document.getElementById('pin-modal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('admin-email-input').focus(), 50);
+}
+
+async function loadFromSupabase(silent = false) {
+  if (!sb || !isGateUnlocked) {
+    if (!silent && !sb) showToast('Paste your Supabase keys in app.js first.', 'amber');
     return;
   }
 
@@ -176,7 +277,7 @@ async function loadFromSupabase(silent = false) {
   }));
 
   if (cRes.data) {
-    weekNumber = Number(cRes.data.week_number || 11);
+    weekNumber = Number(cRes.data.week_number || 1);
     cheerCount = Number(cRes.data.cheer_count || 0);
     appConfig.goalTitle = cRes.data.goal_title || appConfig.goalTitle;
     appConfig.goalCurrentCredits = Number(cRes.data.goal_current_credits ?? appConfig.goalCurrentCredits);
@@ -218,7 +319,7 @@ async function saveSharedSettings() {
 }
 
 // =========================================================================
-// 5. UTILITIES (TIMESTAMPS, SOUND, TOASTS, CONFETTI)
+// 5. UTILITIES (TIMESTAMPS, SOUND, TOASTS, CONFETTI, PODIUM TIES)
 // =========================================================================
 function formatActivityTimestamp() {
   return new Date().toLocaleString('en-US', {
@@ -310,23 +411,25 @@ function updateCheerLabel() {
   el.textContent = `👏 ${capped} / ${maxCheers} ${noun} cheered for the winners!`;
 }
 
-// Groups students into Rank 1, Rank 2, and Rank 3 including any ties
+// Groups students into Rank 1, Rank 2, and Rank 3 including ties (ignores 0-point students)
 function getTop3PodiumGroups(studentList) {
   const sorted = [...studentList]
-    .filter(s => s.weeklyPoints > 0) // Ignore students with 0 weekly points
+    .filter(s => s.weeklyPoints > 0)
     .sort((a, b) => (b.weeklyPoints - a.weeklyPoints) || a.name.localeCompare(b.name));
+
   const groups = { 1: [], 2: [], 3: [] };
   let currentRank = 1;
 
   for (let i = 0; i < sorted.length; i++) {
     if (i > 0 && sorted[i].weeklyPoints < sorted[i - 1].weeklyPoints) {
-      currentRank += 1;
+      currentRank = i + 1;
     }
     if (currentRank > 3) break;
     groups[currentRank].push(sorted[i]);
   }
   return groups;
 }
+
 // =========================================================================
 // 6. RENDERING ENGINE (TACTILE POP + OLYMPIC STAGE PODIUM)
 // =========================================================================
@@ -340,11 +443,10 @@ function renderAll() {
   const adminToolbar = document.getElementById('admin-toolbar');
   const goalEditor = document.getElementById('goal-admin-editor');
   const shopAddBtn = document.getElementById('shop-add-btn');
+  const syncBtn = document.getElementById('sync-btn');
   const emailBadge = document.getElementById('admin-email-badge');
 
   if (isAdmin) {
-    const syncBtn = document.getElementById('sync-btn');
-    if (syncBtn) syncBtn.classList.remove('hidden');
     modePill.textContent = 'Teacher Admin';
     modePill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-100 text-amber-800 border-2 border-amber-300';
     adminBtn.innerHTML = '<span>🔓</span> Sign Out';
@@ -352,10 +454,12 @@ function renderAll() {
     adminToolbar.classList.remove('hidden');
     goalEditor.classList.remove('hidden');
     if (shopAddBtn) shopAddBtn.classList.remove('hidden');
+    if (syncBtn) {
+      syncBtn.classList.remove('hidden');
+      syncBtn.classList.add('inline-flex');
+    }
     if (emailBadge) emailBadge.textContent = currentTeacherEmail ? `Signed in as ${currentTeacherEmail}` : 'Signed in as Teacher';
   } else {
-    const syncBtn = document.getElementById('sync-btn');
-    if (syncBtn) syncBtn.classList.add('hidden');
     modePill.textContent = 'Student View';
     modePill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-100 text-emerald-700 border-2 border-emerald-300';
     adminBtn.innerHTML = '<span>🔒</span> Teacher Admin';
@@ -363,6 +467,10 @@ function renderAll() {
     adminToolbar.classList.add('hidden');
     goalEditor.classList.add('hidden');
     if (shopAddBtn) shopAddBtn.classList.add('hidden');
+    if (syncBtn) {
+      syncBtn.classList.add('hidden');
+      syncBtn.classList.remove('inline-flex');
+    }
   }
 
   const addHouseSelect = document.getElementById('add-house');
@@ -395,12 +503,12 @@ function renderAll() {
     currentTab = 'weekly';
   }
 
-// Olympic Stage 3-Column Stepped Podium (Supports Ties!)
+  // Olympic Stage 3-Column Stepped Podium (Supports Ties + Hides 0-Point Scores)
   const podiumGroups = getTop3PodiumGroups(students);
   const spotlightEl = document.getElementById('spotlight-content');
-  const hasAnyStudents = podiumGroups[1].length || podiumGroups[2].length || podiumGroups[3].length;
+  const hasAnyPodiumWinners = podiumGroups[1].length || podiumGroups[2].length || podiumGroups[3].length;
 
-  if (!hasAnyStudents) {
+  if (!hasAnyPodiumWinners) {
     spotlightEl.innerHTML = `
       <div class="col-span-full rounded-2xl border-2 border-white/25 bg-white/15 p-4 text-xs sm:text-sm font-bold text-white text-center">
         ${students.length === 0
@@ -416,7 +524,7 @@ function renderAll() {
         : '';
       return `
         <div onclick="openStudentModal('${st.id}')" class="cursor-pointer hover:scale-[1.03] transition flex flex-col items-center">
-          <div class="${isFirst ? 'w-13 h-13 bg-white border-2 border-amber-500 border-b-4 text-3xl' : 'w-11 h-11 bg-white/20 border-2 border-white/50 text-2xl'} mx-auto rounded-2xl flex items-center justify-center mb-1">
+          <div class="${isFirst ? 'w-14 h-14 bg-white border-2 border-amber-500 border-b-4 text-3xl' : 'w-11 h-11 bg-white/20 border-2 border-white/50 text-2xl'} mx-auto rounded-2xl flex items-center justify-center mb-1">
             ${st.avatar}
           </div>
           <div class="font-extrabold ${isFirst ? 'text-base sm:text-lg text-slate-950' : 'text-sm sm:text-base text-white'} truncate max-w-full">${escapeHtml(st.name)}</div>
@@ -605,6 +713,15 @@ function renderLeaderboard() {
             + Add
           </button>
         </div>
+        <div class="inline-flex items-center gap-1.5 bg-sky-50/90 border-2 border-sky-200 rounded-2xl p-1">
+          <input id="custom-alltime-${s.id}" type="number" min="1" placeholder="pts"
+            onkeydown="if(event.key==='Enter'){ event.preventDefault(); applyCustomAllTimeAdd('${s.id}'); }"
+            class="w-16 px-2 py-1 rounded-xl bg-white border border-sky-300 text-xs font-extrabold text-slate-900 focus:outline-none" />
+          <button onclick="applyCustomAllTimeAdd('${s.id}')"
+            class="px-3 py-1 rounded-xl bg-sky-500 hover:bg-sky-400 border-b-2 border-sky-700 text-white text-xs font-extrabold transition">
+            + Balance
+          </button>
+        </div>
         <button onclick="applyBrainTeaserAdd('${s.id}')"
           class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 border-b-2 border-emerald-800 text-white text-xs font-extrabold transition">
           +2 🧠 Brain Teaser
@@ -758,7 +875,7 @@ function renderShop() {
           <p class="text-xs text-slate-500 leading-relaxed">${escapeHtml(r.desc)}</p>
         </div>
         <div class="pt-2 border-t border-slate-100 text-[11px] font-bold text-slate-400">
-          Redeemable while supplies last.
+          Deducts from Point Balance only
         </div>
       </div>
     `;
@@ -848,6 +965,36 @@ async function applyCustomAdd(studentId) {
     }
   }
   showToast(`+${delta} pts awarded to ${s.name}!`, 'emerald');
+}
+
+async function applyCustomAllTimeAdd(studentId) {
+  const input = document.getElementById(`custom-alltime-${studentId}`);
+  const delta = Number(input?.value);
+  if (!delta || delta <= 0) {
+    showToast('Enter a positive number of Balance points first.', 'amber');
+    return;
+  }
+
+  const s = students.find(st => st.id === studentId);
+  if (!s) return;
+
+  s.allTimePoints += delta;
+  s.history.unshift(`${formatActivityTimestamp()} • +${delta} Balance pts awarded`);
+  playChime('add');
+  renderAll();
+
+  if (sb) {
+    const { error } = await sb.from('students').update({
+      all_time_points: s.allTimePoints,
+      history: s.history
+    }).eq('id', studentId);
+    if (error) {
+      showToast('Permission denied: ' + error.message, 'rose');
+      await loadFromSupabase(true);
+      return;
+    }
+  }
+  showToast(`+${delta} Balance pts awarded to ${s.name}!`, 'emerald');
 }
 
 async function applyBrainTeaserAdd(studentId) {
@@ -1099,11 +1246,12 @@ async function handleAddStudent(e) {
 // =========================================================================
 async function handleAdminToggle() {
   if (isAdmin) {
-    if (sb) await sb.auth.signOut();
+    if (sb) {
+      await sb.auth.signOut();
+    }
     isAdmin = false;
     currentTeacherEmail = '';
     showToast('Signed out of Teacher Admin.', 'indigo');
-    renderAll();
     return;
   }
   document.getElementById('admin-password-input').value = '';
@@ -1127,6 +1275,12 @@ async function submitTeacherLogin(e) {
   const errEl = document.getElementById('pin-error');
   const submitBtn = document.getElementById('admin-login-submit');
 
+  if (email.toLowerCase() === CLASS_VIEWER_EMAIL.toLowerCase()) {
+    errEl.textContent = 'Please use your personal Teacher Admin email, not the student class viewer account.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
   errEl.classList.add('hidden');
   submitBtn.disabled = true;
   submitBtn.textContent = 'Signing in...';
@@ -1136,27 +1290,28 @@ async function submitTeacherLogin(e) {
   submitBtn.disabled = false;
   submitBtn.textContent = 'Sign In as Teacher';
 
-  if (error || !data?.user) {
+  if (error || !data?.session) {
     errEl.textContent = error?.message || 'Invalid email or password.';
     errEl.classList.remove('hidden');
     return;
   }
 
-  isAdmin = true;
-  currentTeacherEmail = data.user.email || email;
+  applySessionState(data.session);
   closePinModal();
+  await loadFromSupabase(true);
+  startRealtimeSubscription();
   showToast('Signed in to Teacher Admin!', 'amber');
   renderAll();
 }
 
 function openResetConfirmModal() {
-    const groups = getTop3PodiumGroups(students);
-    const winners = [
-      ...groups[1].map(s => ({ rank: 1, s })),
-      ...groups[2].map(s => ({ rank: 2, s })),
-      ...groups[3].map(s => ({ rank: 3, s }))
-    ];
-    const summary = winners.map(w => `<strong>#${w.rank} ${escapeHtml(w.s.name)}</strong> (${w.s.weeklyPoints} pts)`).join(', ');
+  const groups = getTop3PodiumGroups(students);
+  const winners = [
+    ...groups[1].map(s => ({ rank: 1, s })),
+    ...groups[2].map(s => ({ rank: 2, s })),
+    ...groups[3].map(s => ({ rank: 3, s }))
+  ];
+  const summary = winners.map(w => `<strong>#${w.rank} ${escapeHtml(w.s.name)}</strong> (${w.s.weeklyPoints} pts)`).join(', ');
   document.getElementById('reset-modal-body').innerHTML =
     `This will archive Week ${weekNumber}’s podium (${summary || 'no students'}) into the <strong>Hall of Fame</strong>, reset all students’ <strong>Weekly Points</strong> to 0, and clear the weekly cheer counter.`;
   document.getElementById('reset-modal').classList.remove('hidden');
@@ -1167,16 +1322,16 @@ function closeResetConfirmModal() {
 }
 
 async function executeCrownAndReset() {
-    const groups = getTop3PodiumGroups(students);
-    const podiumData = [
-      ...groups[1].map(s => ({ rank: 1, name: s.name, house: s.house, points: s.weeklyPoints })),
-      ...groups[2].map(s => ({ rank: 2, name: s.name, house: s.house, points: s.weeklyPoints })),
-      ...groups[3].map(s => ({ rank: 3, name: s.name, house: s.house, points: s.weeklyPoints }))
-    ];
-    const stamp = formatActivityTimestamp();
-    const today = new Date().toISOString().slice(0, 10);
+  const groups = getTop3PodiumGroups(students);
+  const podiumData = [
+    ...groups[1].map(s => ({ rank: 1, name: s.name, house: s.house, points: s.weeklyPoints })),
+    ...groups[2].map(s => ({ rank: 2, name: s.name, house: s.house, points: s.weeklyPoints })),
+    ...groups[3].map(s => ({ rank: 3, name: s.name, house: s.house, points: s.weeklyPoints }))
+  ];
+  const stamp = formatActivityTimestamp();
+  const today = new Date().toISOString().slice(0, 10);
 
-    if (podiumData.length > 0 && sb) {
+  if (podiumData.length > 0 && sb) {
     await sb.from('hall_of_fame').insert({
       id: 'wk_' + Date.now(),
       week_label: `Week ${weekNumber}`,
@@ -1306,5 +1461,5 @@ function closeStudentModal() {
   document.getElementById('student-modal').classList.add('hidden');
 }
 
-// Boot Supabase & Live Sync
+// Boot Supabase & Option B Gate
 initSupabase();
