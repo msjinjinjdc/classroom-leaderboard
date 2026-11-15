@@ -312,9 +312,9 @@ function updateCheerLabel() {
 
 // Groups students into Rank 1, Rank 2, and Rank 3 including any ties
 function getTop3PodiumGroups(studentList) {
-  const sorted = [...studentList].sort((a, b) =>
-    (b.weeklyPoints - a.weeklyPoints) || a.name.localeCompare(b.name)
-  );
+  const sorted = [...studentList]
+    .filter(s => s.weeklyPoints > 0) // Ignore students with 0 weekly points
+    .sort((a, b) => (b.weeklyPoints - a.weeklyPoints) || a.name.localeCompare(b.name));
   const groups = { 1: [], 2: [], 3: [] };
   let currentRank = 1;
 
@@ -403,7 +403,9 @@ function renderAll() {
   if (!hasAnyStudents) {
     spotlightEl.innerHTML = `
       <div class="col-span-full rounded-2xl border-2 border-white/25 bg-white/15 p-4 text-xs sm:text-sm font-bold text-white text-center">
-        No students on the leaderboard yet! Sign in via <strong>Teacher Admin</strong> above to add your class roster.
+        ${students.length === 0
+          ? 'No students on the leaderboard yet! Sign in via <strong>Teacher Admin</strong> above to add your class roster.'
+          : '🌟 New week started! Earn weekly points to claim a spot on the Top 3 Podium!'}
       </div>
     `;
   } else {
