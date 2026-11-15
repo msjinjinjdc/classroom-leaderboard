@@ -628,7 +628,7 @@ function renderLeaderboard() {
     ` : '';
 
     const primaryPts = currentTab === 'allTime' ? s.allTimePoints : s.weeklyPoints;
-    const secondaryLabel = currentTab === 'allTime' ? `${s.weeklyPoints} this week` : `${s.allTimePoints} all-time`;
+    const secondaryLabel = currentTab === 'allTime' ? `${s.weeklyPoints} this week` : `${s.allTimePoints} balance`;
 
     return `
       <div onclick="openStudentModal('${s.id}')"
@@ -855,7 +855,7 @@ async function applyBrainTeaserAdd(studentId) {
   if (!s) return;
 
   s.allTimePoints += 2;
-  s.history.unshift(`${formatActivityTimestamp()} • +2 All-Time pts — 🧠 Brain Teaser`);
+  s.history.unshift(`${formatActivityTimestamp()} • +2 Balance pts — 🧠 Brain Teaser`);
   playChime('add');
   renderAll();
 
@@ -870,7 +870,7 @@ async function applyBrainTeaserAdd(studentId) {
       return;
     }
   }
-  showToast(`+2 All-Time pts (Brain Teaser) awarded to ${s.name}!`, 'emerald');
+  showToast(`+2 Balance pts (Brain Teaser) awarded to ${s.name}!`, 'emerald');
 }
 
 async function applyDailyGoodStudentAdd(studentId) {
@@ -878,7 +878,7 @@ async function applyDailyGoodStudentAdd(studentId) {
   if (!s) return;
 
   s.allTimePoints += 1;
-  s.history.unshift(`${formatActivityTimestamp()} • +1 All-Time pt — 🌟 Daily good student reward point`);
+  s.history.unshift(`${formatActivityTimestamp()} • +1 Balance pt — 🌟 Daily good student reward point`);
   playChime('add');
   renderAll();
 
@@ -893,18 +893,18 @@ async function applyDailyGoodStudentAdd(studentId) {
       return;
     }
   }
-  showToast(`+1 All-Time pt (Daily good student reward point) awarded to ${s.name}!`, 'emerald');
+  showToast(`+1 Balance pt (Daily good student reward point) awarded to ${s.name}!`, 'emerald');
 }
 
 async function applyRewardDeduction(studentId, cost, rewardName, icon) {
   const s = students.find(st => st.id === studentId);
   if (!s) return;
   if (s.allTimePoints < cost) {
-    showToast(`${s.name} needs ${cost} All-Time pts (has ${s.allTimePoints}).`, 'rose');
+    showToast(`${s.name} needs ${cost} Balance pts (has ${s.allTimePoints}).`, 'rose');
     return;
   }
   s.allTimePoints = Math.max(0, s.allTimePoints - cost);
-  s.history.unshift(`${formatActivityTimestamp()} • -${cost} All-Time pts — Redeemed ${icon} ${rewardName}`);
+  s.history.unshift(`${formatActivityTimestamp()} • -${cost} Balance pts — Redeemed ${icon} ${rewardName}`);
   playChime('deduct');
   renderAll();
 
@@ -919,7 +919,7 @@ async function applyRewardDeduction(studentId, cost, rewardName, icon) {
       return;
     }
   }
-  showToast(`${s.name} redeemed ${icon} ${rewardName} (-${cost} All-Time pts)`, 'amber');
+  showToast(`${s.name} redeemed ${icon} ${rewardName} (-${cost} Balance pts)`, 'amber');
 }
 
 async function changeStudentTeam(studentId, newHouse) {
