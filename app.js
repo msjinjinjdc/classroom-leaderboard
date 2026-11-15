@@ -326,6 +326,8 @@ function renderAll() {
   const emailBadge = document.getElementById('admin-email-badge');
 
   if (isAdmin) {
+    const syncBtn = document.getElementById('sync-btn');
+    if (syncBtn) syncBtn.classList.remove('hidden');
     modePill.textContent = 'Teacher Admin';
     modePill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-100 text-amber-800 border-2 border-amber-300';
     adminBtn.innerHTML = '<span>🔓</span> Sign Out';
@@ -335,6 +337,8 @@ function renderAll() {
     if (shopAddBtn) shopAddBtn.classList.remove('hidden');
     if (emailBadge) emailBadge.textContent = currentTeacherEmail ? `Signed in as ${currentTeacherEmail}` : 'Signed in as Teacher';
   } else {
+    const syncBtn = document.getElementById('sync-btn');
+    if (syncBtn) syncBtn.classList.add('hidden');
     modePill.textContent = 'Student View';
     modePill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-100 text-emerald-700 border-2 border-emerald-300';
     adminBtn.innerHTML = '<span>🔒</span> Teacher Admin';

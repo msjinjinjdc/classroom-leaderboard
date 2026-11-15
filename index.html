@@ -50,8 +50,8 @@
 
           <!-- Action Buttons -->
           <div class="flex flex-wrap items-center gap-2">
-            <button onclick="loadFromSupabase()"
-              class="inline-flex items-center gap-1 px-3 py-2 rounded-2xl text-xs font-extrabold bg-slate-100 text-slate-700 hover:bg-slate-200 border-b-4 border-slate-300 active:translate-y-0.5 transition">
+            <button id="sync-btn" onclick="loadFromSupabase()"
+              class="hidden inline-flex items-center gap-1 px-3 py-2 rounded-2xl text-xs font-extrabold bg-slate-100 text-slate-700 hover:bg-slate-200 border-b-4 border-slate-300 active:translate-y-0.5 transition">
               <span>↻</span> Sync
             </button>
             <button id="admin-toggle-btn" onclick="handleAdminToggle()"
