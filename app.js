@@ -4,7 +4,6 @@
 const SUPABASE_URL = "https://rqrnxivxqpnnqfptegit.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_gzGy_6tQBg4xWvQA-YMezg_0SAGV9t0";
 const CLASS_VIEWER_EMAIL = "class@msjinjin.com";
-
 // =========================================================================
 // 2. CLASSROOM CONFIGURATION & PALETTES
 // =========================================================================
@@ -16,6 +15,26 @@ const COLOR_PALETTES = {
   blue: { badge: 'bg-blue-100 text-blue-800 border-blue-300', dot: 'bg-blue-600' },
   lime: { badge: 'bg-lime-100 text-lime-900 border-lime-300', dot: 'bg-lime-500' }
 };
+
+const AVATAR_OPTIONS = [
+  // Cute & Kawaii Favorites
+  '🧸', '🦄', '🐣', '🐥', '🐰', '🐼', '🐨', '🦊', '🐶', '🐱',
+  '🐹', '🐻‍❄️', '🦦', '🦔', '🦙', '🦥', '🐧', '🦩', '🦭', '🐬',
+  '🦋', '🐝', '🐞', '🐢', '🦕', '🦖', '🧚', '🧜‍♀️', '🦸', '🧙',
+  '🤖', '👾', '👻', '👽',  '🌸', '🌻', '🍄',
+
+  // Mammals
+  '🐭', '🐻', '🐯', '🦁', '🐮', '🐷', '🐸',  '🐕', '🐩', '🦮', '🐕‍🦺', '🐺', '🦝',
+  '🐈', '🐈‍⬛', '🐆', '🐅', '🦓', '🦌', '🦬', '🐂', '🐃', 
+  '🐎', '🫎', '🫏', '🐖', '🐏',  '🐐', '🐪', '🐫', '🦒',
+  '🐘', '🦣', 
+
+  // Birds
+  '🐤', '🐦', '🦅', '🦆', '🦢', '🦉', '🦤',
+   '🦚', '🦜', '🐦‍⬛', '🪿', '🐦‍🔥',
+
+
+];
 
 let appConfig = {
   classTitle: "Ms. JinJin's Class Leaderboard",
@@ -216,20 +235,6 @@ async function unlockClassGate(e) {
   await loadFromSupabase(true);
   startRealtimeSubscription();
   showToast('Welcome to the classroom leaderboard!', 'emerald');
-}
-
-async function lockClassGate() {
-  if (sb) {
-    if (realtimeChannel) {
-      await sb.removeChannel(realtimeChannel);
-      realtimeChannel = null;
-    }
-    await sb.auth.signOut();
-  }
-  students = [];
-  hallOfFame = [];
-  applySessionState(null);
-  showToast('Signed out of the classroom.', 'indigo');
 }
 
 function openPinModalFromGate() {
@@ -449,8 +454,9 @@ function renderAll() {
   if (isAdmin) {
     modePill.textContent = 'Teacher Admin';
     modePill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-100 text-amber-800 border-2 border-amber-300';
+    adminBtn.classList.remove('hidden');
     adminBtn.innerHTML = '<span>🔓</span> Sign Out';
-    adminBtn.className = 'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-extrabold bg-violet-600 text-white hover:bg-violet-500 border-b-4 border-violet-800 active:translate-y-0.5 transition';
+    adminBtn.className = 'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-extrabold bg-amber-400 text-slate-950 hover:bg-amber-300 border-b-4 border-amber-600 active:translate-y-0.5 transition';
     adminToolbar.classList.remove('hidden');
     goalEditor.classList.remove('hidden');
     if (shopAddBtn) shopAddBtn.classList.remove('hidden');
@@ -462,6 +468,7 @@ function renderAll() {
   } else {
     modePill.textContent = 'Student View';
     modePill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-100 text-emerald-700 border-2 border-emerald-300';
+    adminBtn.classList.remove('hidden');
     adminBtn.innerHTML = '<span>🔒</span> Teacher Admin';
     adminBtn.className = 'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-extrabold bg-slate-900 text-white hover:bg-slate-800 border-b-4 border-slate-950 active:translate-y-0.5 transition';
     adminToolbar.classList.add('hidden');
@@ -512,8 +519,8 @@ function renderAll() {
     spotlightEl.innerHTML = `
       <div class="col-span-full rounded-2xl border-2 border-white/25 bg-white/15 p-4 text-xs sm:text-sm font-bold text-white text-center">
         ${students.length === 0
-        ? 'No students on the leaderboard yet! Sign in via <strong>Teacher Admin</strong> above to add your class roster.'
-        : '🌟 New week started! Earn weekly points to claim a spot on the Top 3 Podium!'}
+          ? 'No students on the leaderboard yet! Sign in via <strong>Teacher Admin</strong> above to add your class roster.'
+          : '🌟 New week started! Earn weekly points to claim a spot on the Top 3 Podium!'}
       </div>
     `;
   } else {
@@ -703,6 +710,14 @@ function renderLeaderboard() {
       </select>
     ` : '';
 
+    const avatarPickerList = AVATAR_OPTIONS.includes(s.avatar) ? AVATAR_OPTIONS : [s.avatar, ...AVATAR_OPTIONS];
+    const avatarSelectHtml = `
+      <select onclick="event.stopPropagation()" onchange="changeStudentAvatar('${s.id}', this.value)" title="Change student avatar"
+        class="px-2 py-1.5 rounded-xl bg-white border-2 border-slate-300 text-xs font-bold text-slate-700">
+        ${avatarPickerList.map(av => `<option value="${av}" ${av === s.avatar ? 'selected' : ''}>${av}</option>`).join('')}
+      </select>
+    `;
+
     const adminControlsHtml = isAdmin ? `
       <div onclick="event.stopPropagation()" class="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2">
         <div class="inline-flex items-center gap-1.5 bg-emerald-50/80 border-2 border-emerald-200 rounded-2xl p-1">
@@ -735,6 +750,7 @@ function renderLeaderboard() {
         </div>
         ${badgeAwarderHtml}
         <div class="ml-auto flex items-center gap-1.5">
+          ${avatarSelectHtml}
           ${teamSelectHtml}
           <button onclick="openDeleteModal('${s.id}')" title="Remove student"
             class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-100 border-b-2 border-slate-300 text-slate-600 hover:text-rose-700 text-xs font-bold transition">
@@ -1085,6 +1101,26 @@ async function changeStudentTeam(studentId, newHouse) {
   showToast(`Moved ${s.name} to Team ${newHouse}`, 'indigo');
 }
 
+async function changeStudentAvatar(studentId, newAvatar) {
+  const s = students.find(st => st.id === studentId);
+  if (!s || !newAvatar) return;
+  s.avatar = newAvatar;
+  renderAll();
+  if (activeModalStudentId === studentId) openStudentModal(studentId);
+
+  if (sb) {
+    const { error } = await sb.from('students').update({
+      avatar: s.avatar
+    }).eq('id', studentId);
+    if (error) {
+      showToast('Permission denied: ' + error.message, 'rose');
+      await loadFromSupabase(true);
+      return;
+    }
+  }
+  showToast(`Updated ${s.name}'s avatar to ${newAvatar}`, 'indigo');
+}
+
 function handleBadgeDropdownChange(studentId, val) {
   const customInput = document.getElementById(`badge-custom-${studentId}`);
   const removeSelect = document.getElementById(`badge-remove-select-${studentId}`);
@@ -1214,20 +1250,13 @@ async function handleAddStudent(e) {
 
   const name = nameInput.value.trim();
   if (!name) return;
-  const avatars = ['🧸', '🦄', '🐣', '🐥', '🐰', '🐼', '🐨',
-    '🦊', '🐶', '🐱', '🐯', '🦁', '🐮', '🐷', '🐸',
-    '🐹', '🐻‍❄️', '🦦', '🦔', '🦙', '🦥', '🐧', '🦩', '🦭', '🐬',
-    '🦋', '🐝', '🐞', '🐢', '🦕', '🦖', '🧙',
-    '🤖', '👾', '👻', '👽', '🍓', '🍑', '🍒', '🍉', '🧁', '🍩', '🍦', '🧋', '🚀', '🍀', '🌸', '🌻', '🍄', '🐭', '🐻',
-    '🙊', '🐒', '🦍', '🐕', '🐩', '🦮', '🐕‍🦺', '🐺', '🦝',
-    '🐈', '🐘', '🐔', '🐓', '🐤', '🐦', '🕊️', '🦅', '🦆', '🦢', '🦉', '🦤',
-    '🦚', '🦜', '🐦‍⬛', '🪿', '🐦‍🔥', '🐉'];
+  const autoAvatar = AVATAR_OPTIONS[students.length % AVATAR_OPTIONS.length];
   const badge = badgeInput.value.trim();
 
   const newStudent = {
     id: 's' + Date.now(),
     name,
-    avatar: avatars[students.length % avatars.length],
+    avatar: autoAvatar,
     house: houseInput.value || appConfig.houses[0]?.name || 'Brown',
     weekly_points: 0,
     all_time_points: 0,
