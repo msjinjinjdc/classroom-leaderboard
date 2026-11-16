@@ -432,7 +432,7 @@ function getTop3PodiumGroups(studentList) {
 
   for (let i = 0; i < sorted.length; i++) {
     if (i > 0 && sorted[i].weeklyPoints < sorted[i - 1].weeklyPoints) {
-      currentRank = i + 1;
+      currentRank += 1;
     }
     if (currentRank > 3) break;
     groups[currentRank].push(sorted[i]);
@@ -651,18 +651,20 @@ function renderLeaderboard() {
   }
 
   let prevPts = null;
-  let prevRank = 1;
+  let currentRank = 1;
 
   listEl.innerHTML = filtered.map((s, idx) => {
     const houseObj = appConfig.houses.find(h => h.name === s.house) || appConfig.houses[0];
     const palette = COLOR_PALETTES[houseObj?.color] || COLOR_PALETTES.brown;
 
-    const rank = (idx > 0 && s.weeklyPoints === prevPts) ? prevRank : idx + 1;
+    if (idx > 0 && s.weeklyPoints < prevPts) {
+      currentRank += 1;
+    }
     prevPts = s.weeklyPoints;
-    prevRank = rank;
+    const rank = currentRank;
 
     const rankBadge = currentTab === 'weekly'
-      ? (rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`)
+      ? (s.weeklyPoints > 0 && rank === 1 ? '🥇' : s.weeklyPoints > 0 && rank === 2 ? '🥈' : s.weeklyPoints > 0 && rank === 3 ? '🥉' : `#${rank}`)
       : '⭐';
 
     const teamPillHtml = (isAdmin && appConfig.enableHouses && houseObj)
