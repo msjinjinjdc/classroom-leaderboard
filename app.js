@@ -675,6 +675,10 @@ function renderLeaderboard() {
       `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-violet-50 text-violet-700 border border-violet-200 text-[11px] font-bold">⭐ ${escapeHtml(b)}${isAdmin ? ` <button type="button" onclick="event.stopPropagation(); removeBadgeFromStudent('${s.id}', '${escapeHtml(b)}')" title="Remove badge" class="ml-0.5 text-violet-400 hover:text-rose-600 font-extrabold">✕</button>` : ''}</span>`
     ).join('');
 
+    const recentActivityHtml = s.history?.[0]
+  ? `<div class="text-xs text-slate-400 truncate mt-1">${escapeHtml(s.history[0])}</div>`
+  : '';
+
     const badgePresetsHtml = (appConfig.presetBadges || []).map(b =>
       `<option value="${escapeHtml(b)}">⭐ ${escapeHtml(b)}</option>`
     ).join('');
@@ -786,9 +790,8 @@ function renderLeaderboard() {
                 <span class="font-extrabold text-sm sm:text-base text-slate-900 truncate">${escapeHtml(s.name)}</span>
                 ${teamPillHtml}
               </div>
-              <div class="flex items-center gap-1.5 flex-wrap mt-1">
-                ${badgesHtml || `<span class="text-xs text-slate-400 truncate">${escapeHtml(s.history?.[0] || '')}</span>`}
-              </div>
+              ${badgesHtml ? `<div class="flex items-center gap-1.5 flex-wrap mt-1">${badgesHtml}</div>` : ''}
+              ${recentActivityHtml}
             </div>
           </div>
 
